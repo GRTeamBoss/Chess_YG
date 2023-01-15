@@ -1,0 +1,40 @@
+*, *::before, *::after{
+    box-sizing: border-box;
+    color: black;
+    font-size: 16px;
+}
+
+.background {
+    display: block;
+    background: gray;
+    width: 800px;
+    height: 800px;
+    align-items: center;
+    justify-content: center;
+    margin-inline: auto;
+}
+
+.board {
+    display: grid;
+    grid: 64px 64px 64px 64px 64px 64px 64px 64px / 512px;
+    width: 512px;
+    height: 512px;
+}
+.line-odd, .line-even {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    border: solid 1px pink;
+}
+.line-odd > .cell:nth-child(odd),
+.line-even > .cell:nth-child(even) {
+    background: black;
+}
+
+.cell{
+    display: block;
+    width: 64px;
+    height: 64px;
+    border: solid 1px red;
+}
