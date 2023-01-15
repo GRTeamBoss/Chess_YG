@@ -1,2 +1,2 @@
 # Chess_YG
-Yandex Game &lt;GRTB_Family>
+> Yandex Game &lt;GRTB_Family>
