@@ -29,12 +29,58 @@
 }
 .line-odd > .cell:nth-child(odd),
 .line-even > .cell:nth-child(even) {
-    background: black;
+    background-color: black;
+/*    background-color: rgba(10, 10, 10, .5);*/
 }
 
-.cell{
+.cell {
+    display: inline-block;
+    width: 64px;
+    height: 64px;
+    align-items: center;
+    justify-content: center;
+}
+
+.pawn, 
+.bishop, 
+.knight, 
+.rook, 
+.queen, 
+.king {
     display: block;
     width: 64px;
     height: 64px;
-    border: solid 1px red;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.pawn {
+    background-image: url("./assets/models/extends/lucas312/pawn.png");
+}
+
+.bishop {
+    background-image: url("./assets/models/extends/lucas312/bishop.png");
+}
+
+.knight {
+    background-image: url("./assets/models/extends/lucas312/knight.png");
+}
+
+.rook {
+    background-image: url("./assets/models/extends/lucas312/rook.png");
+}
+
+.queen {
+    background-image: url("./assets/models/extends/lucas312/queen.png");
+}
+
+.king {
+    background-image: url("./assets/models/extends/lucas312/king.png");
+}
+.figure > img{
+    display: block;
+    width: 42px;
+    height: 42px;
+    margin: auto;
+    border: solid 1px pink;
 }
