@@ -4,11 +4,16 @@
     font-size: 16px;
 }
 
+html {
+    font-family: monospace, sans-serif, system-ui, serif;
+    font-variant-ligatures: common-ligatures;
+}
+
 .background {
-    display: block;
+    display: flex;
     background: gray;
-    width: 800px;
-    height: 800px;
+    width: 50rem;
+    height: 50rem;
     align-items: center;
     justify-content: center;
     margin-inline: auto;
@@ -16,71 +21,207 @@
 
 .board {
     display: grid;
-    grid: 64px 64px 64px 64px 64px 64px 64px 64px / 512px;
-    width: 512px;
-    height: 512px;
+    grid: 4rem 4rem 4rem 4rem 4rem 4rem 4rem 4rem / 32rem;
+    width: 32rem;
+    height: 32rem;
+    box-shadow: 1vw 1vw 0 0 red;
 }
 .line-odd, .line-even {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    border: solid 1px pink;
 }
+.line-odd > .cell:nth-child(even),
+.line-even > .cell:nth-child(odd) {
+    background-color: limegreen;
+    color: white;
+}
+
 .line-odd > .cell:nth-child(odd),
 .line-even > .cell:nth-child(even) {
-    background-color: black;
-/*    background-color: rgba(10, 10, 10, .5);*/
+    background-color: whitesmoke;
+    color: black;
 }
 
 .cell {
-    display: inline-block;
-    width: 64px;
-    height: 64px;
-    align-items: center;
-    justify-content: center;
+    display: block;
+    width: 4rem;
+    height: 4rem;
 }
 
-.pawn, 
-.bishop, 
-.knight, 
-.rook, 
-.queen, 
-.king {
+.pawn-white,
+.pawn-black, 
+.bishop-white,
+.bishop-black,
+.knight-white,
+.knight-black, 
+.rook-white,
+.rook-black,
+.queen-white,
+.queen-black, 
+.king-white,
+.king-black {
     display: block;
-    width: 64px;
-    height: 64px;
+    width: 4rem;
+    height: 4rem;
     background-repeat: no-repeat;
     background-position: center;
 }
 
-.pawn {
+.pawn-white:hover,
+.pawn-black:hover, 
+.bishop-white:hover,
+.bishop-black:hover,
+.knight-white:hover,
+.knight-black:hover,
+.rook-white:hover,
+.rook-black:hover,
+.queen-white:hover,
+.queen-black:hover, 
+.king-white:hover,
+.king-black:hover {
+    transform: scale(1.2);
+    border: solid .2rem green;
+    box-shadow: 0 0 .2rem .2rem lightgreen;
+} 
+
+.pawn-white {
     background-image: url("./assets/models/extends/lucas312/pawn.png");
 }
 
-.bishop {
+.pawn-black {
+    background-image: url("./assets/models/extends/lucas312/pawn1.png");
+}
+
+.bishop-white {
     background-image: url("./assets/models/extends/lucas312/bishop.png");
 }
 
-.knight {
+.bishop-black {
+    background-image: url("./assets/models/extends/lucas312/bishop1.png");
+}
+
+.knight-white {
     background-image: url("./assets/models/extends/lucas312/knight.png");
 }
 
-.rook {
+.knight-black {
+    background-image: url("./assets/models/extends/lucas312/knight1.png");
+}
+
+.rook-white {
     background-image: url("./assets/models/extends/lucas312/rook.png");
 }
 
-.queen {
+.rook-black {
+    background-image: url("./assets/models/extends/lucas312/rook1.png");
+}
+
+.queen-white {
     background-image: url("./assets/models/extends/lucas312/queen.png");
 }
 
-.king {
+.queen-black {
+    background-image: url("./assets/models/extends/lucas312/queen1.png");
+}
+
+.king-white {
     background-image: url("./assets/models/extends/lucas312/king.png");
 }
-.figure > img{
+
+.king-black {
+    background-image: url("./assets/models/extends/lucas312/king1.png");
+}
+
+#cell-1::before,
+#cell-9::before,
+#cell-17::before,
+#cell-25::before,
+#cell-33::before,
+#cell-41::before,
+#cell-49::before,
+#cell-57::before {
+    color: inherit;
+    position: absolute;
     display: block;
-    width: 42px;
-    height: 42px;
-    margin: auto;
-    border: solid 1px pink;
+}
+
+#cell-1::before {
+    content: "1";
+}
+
+#cell-9::before {
+    content: "2";
+}
+
+#cell-17::before {
+    content: "3";
+}
+
+#cell-25::before {
+    content: "4";
+}
+
+#cell-33::before {
+    content: "5";
+}
+
+#cell-41::before {
+    content: "6";
+}
+
+#cell-49::before {
+    content: "7";
+}
+
+#cell-57::before {
+    content: "8";
+}
+
+#cell-57::after,
+#cell-58::after,
+#cell-59::after,
+#cell-60::after,
+#cell-61::after,
+#cell-62::after,
+#cell-63::after,
+#cell-64::after {
+    color: inherit;
+    display: block;
+    position: absolute;
+    margin-left: 3.2rem;
+    margin-top: 2.8rem;
+}
+
+#cell-57::after {
+    content: "h";
+}
+
+#cell-58::after {
+    content: "g";
+}
+
+#cell-59::after {
+    content: "f";
+}
+
+#cell-60::after {
+    content: "e";
+}
+
+#cell-61::after {
+    content: "d";
+}
+
+#cell-62::after {
+    content: "c";
+}
+
+#cell-63::after {
+    content: "b";
+}
+
+#cell-64::after {
+    content: "a";
 }
