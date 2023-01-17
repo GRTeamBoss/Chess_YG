@@ -4,3 +4,22 @@
     height: 4rem;
     background-color: green;
 }
+
+.possible-move {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    background-color: rgba(10, 10, 255, .6);
+    box-shadow: 0 0 .2rem .2rem lawngreen;
+}
+
+.possible-move:hover {
+    transform: scale(1.1);
+}
+
+.wrong-move {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    background-color: indianred;
+}
