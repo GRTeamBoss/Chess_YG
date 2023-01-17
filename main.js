@@ -1,6 +1,6 @@
 document.onreadystatechange = () => {
 
-    if (document.readyState == "complete") {
+    if (document.readyState === "complete") {
         fillWhiteSide("top");
         fillBlackSide("bottom");
         handlerModels();
@@ -10,13 +10,17 @@ document.onreadystatechange = () => {
 
 function handlerModels() {
     document.querySelectorAll('.cell').forEach(item => {
-        item.addEventListener('click', e => {
-            clearModels();
-            if (item.className.split(" ").length == 2) {
+        item.addEventListener('click', () => {
+            if (item.className.split(" ").length === 2) {
+                clearModels();
                 item.classList.remove('cell');
                 item.classList.add('hold');
+            } else if (item.className.split(" ").length === 1) {
+                let figure = document.querySelector('.hold');
+                if (figure !== null) {
+                    moveFigure(figure, figure.attributes.id.value, item.attributes.id.value);
+                }
             }
-            console.log(item.className.toString(), item.attributes.id.value);
         });
     });
 }
@@ -26,6 +30,42 @@ function clearModels() {
         item.classList.remove('hold');
         item.classList.add('cell');
     });
+}
+
+function whoStep() {
+    let color = document.getElementById('data').attributes.getNamedItem('aria-move').value;
+    return color;
+}
+
+function whoStepToggle() {
+    let color = document.getElementById('data').attributes.getNamedItem('aria-move').value;
+    switch (color) {
+        case "white":
+            document.getElementById('data').attributes.getNamedItem('aria-move').value = 'black';
+            break;
+        case "black":
+            document.getElementById('data').attributes.getNamedItem('aria-move').value = 'white';
+            break;
+        default:
+            break;
+    }
+}
+function moveFigure(figure, from, to) {
+    let className = figure.className.split(' ')[0];
+    let figureArray = className.split("-");
+    let name = figureArray[0];
+    let color = figureArray[1];
+    console.log('color: ', color);
+    let colorOrder = whoStep();
+    if (colorOrder === color) {
+        document.getElementById(from).classList.remove(className);
+        document.getElementById(from).classList.remove('hold');
+        document.getElementById(from).classList.add('cell');
+        document.getElementById(to).classList.add(className);
+        whoStepToggle();
+    } else {
+        clearModels();
+    }
 }
 
 function fillWhiteSide(side) {
@@ -60,18 +100,18 @@ function fillSide(side, color) {
 
     /* TOP */
     // rook
-    var h1 = document.getElementById('cell-1');
-    var a1 = document.getElementById('cell-8');
+    let h1 = document.getElementById('cell-1');
+    let a1 = document.getElementById('cell-8');
     // knights
-    var g1 = document.getElementById('cell-2');
-    var b1 = document.getElementById('cell-7');
+    let g1 = document.getElementById('cell-2');
+    let b1 = document.getElementById('cell-7');
     // bishop
-    var f1 = document.getElementById('cell-3');
-    var c1 = document.getElementById('cell-6');
+    let f1 = document.getElementById('cell-3');
+    let c1 = document.getElementById('cell-6');
     // queen
-    var e1 = document.getElementById('cell-4');
+    let e1 = document.getElementById('cell-4');
     // king
-    var d1 = document.getElementById('cell-5');
+    let d1 = document.getElementById('cell-5');
     /* END TOP */
 
     const top = {
@@ -84,18 +124,18 @@ function fillSide(side, color) {
 
     /* BOTTOM */
     // rook
-    var h8 = document.getElementById('cell-57');
-    var a8 = document.getElementById('cell-64');
+    let h8 = document.getElementById('cell-57');
+    let a8 = document.getElementById('cell-64');
     // knights
-    var g8 = document.getElementById('cell-58');
-    var b8 = document.getElementById('cell-63');
+    let g8 = document.getElementById('cell-58');
+    let b8 = document.getElementById('cell-63');
     // bishop
-    var f8 = document.getElementById('cell-59');
-    var c8 = document.getElementById('cell-62');
+    let f8 = document.getElementById('cell-59');
+    let c8 = document.getElementById('cell-62');
     // queen
-    var e8 = document.getElementById('cell-60');
+    let e8 = document.getElementById('cell-60');
     // king
-    var d8 = document.getElementById('cell-61');
+    let d8 = document.getElementById('cell-61');
     /* END BOTTOM*/
 
     const bottom = {
@@ -108,34 +148,34 @@ function fillSide(side, color) {
 
     switch (side) {
         case "top":
-            for (item of top.rook) {
+            for (let item of top.rook) {
                 item.classList.add(sideColor[color].rook);
             }
-            for (item of top.knights) {
+            for (let item of top.knights) {
                 item.classList.add(sideColor[color].knights);
             }
-            for (item of top.bishop) {
+            for (let item of top.bishop) {
                 item.classList.add(sideColor[color].bishop);
             }
             top.queen.classList.add(sideColor[color].queen);
             top.king.classList.add(sideColor[color].king);
-            for (var i = 9; i < 17; i++) {
+            for (let i = 9; i < 17; i++) {
                 document.getElementById('cell-' + i.toString()).classList.add(sideColor[color].pawn);
             }
             break;
         case "bottom":
-            for (item of bottom.rook) {
+            for (let item of bottom.rook) {
                 item.classList.add(sideColor[color].rook);
             }
-            for (item of bottom.knights) {
+            for (let item of bottom.knights) {
                 item.classList.add(sideColor[color].knights);
             }
-            for (item of bottom.bishop) {
+            for (let item of bottom.bishop) {
                 item.classList.add(sideColor[color].bishop);
             }
             bottom.queen.classList.add(sideColor[color].queen);
             bottom.king.classList.add(sideColor[color].king);
-            for (var i = 49; i < 57; i++) {
+            for (let i = 49; i < 57; i++) {
                 document.getElementById('cell-' + i.toString()).classList.add(sideColor[color].pawn);
             }
             break;
