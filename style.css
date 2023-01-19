@@ -9,8 +9,27 @@ html {
     font-variant-ligatures: common-ligatures;
 }
 
+.history {
+    display: block;
+    position: relative;
+    width: 50rem;
+    height: 10rem;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    background-color: azure;
+    box-shadow: 0 0 .2rem .2rem black;
+    color: darkslategrey;
+    font-weight: lighter;
+    margin-inline: auto;
+}
+.history > p {
+    word-wrap: break-word;
+    border-bottom: solid .15rem;
+}
+
 .background {
     display: flex;
+    flex-direction: row;
     background: gray;
     width: 50rem;
     height: 50rem;
@@ -19,12 +38,37 @@ html {
     margin-inline: auto;
 }
 
+.black-kill,
+.white-kill{
+    display: grid;
+    grid: 4rem 4rem 4rem 4rem 4rem 4rem 4rem 4rem / 4rem 4rem;
+    width: 8rem;
+    height: 32rem;
+    background-color: antiquewhite;
+    margin-inline: 1rem;
+}
+
+.black-kill {
+    box-shadow: -.5rem 0 .5rem .5rem black;
+}
+
+.white-kill {
+    box-shadow: .5rem 0 .5rem .5rem whitesmoke;
+}
+
+.eat {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    background-color: rgba(200, 200, 200, .6);
+}
+
 .board {
     display: grid;
     grid: 4rem 4rem 4rem 4rem 4rem 4rem 4rem 4rem / 32rem;
     width: 32rem;
     height: 32rem;
-    box-shadow: 1vw 1vw 0 0 red;
+    box-shadow: -.2rem -.2rem 1rem 1rem black, .2rem .2rem 1rem 1rem whitesmoke;
 }
 .line-odd, .line-even {
     display: flex;

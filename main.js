@@ -1,15 +1,30 @@
 document.onreadystatechange = () => {
     if (document.readyState === "complete") {
-        console.log('Work!');
         new StartGame("white").activate();
         new EventListener(new Chess()).activate();
     }
 }
 class Chess {
     constructor() {
-        console.log('Chess');
-        this.colors = new HandlerUtil().parseColors();
+        this.current = null;
+        this.figure = null;
         this.queue = null;
+        this.queueNegative = null;
+        this.check = false;
+        this.checkMate = false;
+        this.allowedMove = [];
+        this.history = [];
+        this.colors = new HandlerUtil().parseColors();
+        this.lines = {
+            1 : [1, 2, 3, 4, 5, 6, 7, 8],
+            2 : [9, 10, 11, 12, 13, 14, 15, 16],
+            3 : [17, 18, 19, 20, 21, 22, 23, 24],
+            4 : [25, 26, 27, 28, 29, 30, 31, 32],
+            5 : [33, 34, 35, 36, 37, 38, 39, 40],
+            6 : [41, 42, 43, 44, 45, 46, 47, 48],
+            7 : [49, 50, 51, 52, 53, 54, 55, 56],
+            8 : [57, 58, 59, 60, 61, 62, 63, 64]
+        };
         this.position = {
             1: "rook-" + this.colors.bot,
             2: "knight-" + this.colors.bot,
@@ -27,38 +42,10 @@ class Chess {
             14: "pawn-" + this.colors.bot,
             15: "pawn-" + this.colors.bot,
             16: "pawn-" + this.colors.bot,
-            17: null,
-            18: null,
-            19: null,
-            20: null,
-            21: null,
-            22: null,
-            23: null,
-            24: null,
-            25: null,
-            26: null,
-            27: null,
-            28: null,
-            29: null,
-            30: null,
-            31: null,
-            32: null,
-            33: null,
-            34: null,
-            35: null,
-            36: null,
-            37: null,
-            38: null,
-            39: null,
-            40: null,
-            41: null,
-            42: null,
-            43: null,
-            44: null,
-            45: null,
-            46: null,
-            47: null,
-            48: null,
+            17: null, 18: null, 19: null, 20: null, 21: null, 22: null, 23: null, 24: null,
+            25: null, 26: null, 27: null, 28: null, 29: null, 30: null, 31: null, 32: null,
+            33: null, 34: null, 35: null, 36: null, 37: null, 38: null, 39: null, 40: null,
+            41: null, 42: null, 43: null, 44: null, 45: null, 46: null, 47: null, 48: null,
             49: "pawn-" + this.colors.user,
             50: "pawn-" + this.colors.user,
             51: "pawn-" + this.colors.user,
@@ -75,157 +62,592 @@ class Chess {
             62: "bishop-" + this.colors.user,
             63: "knight-" + this.colors.user,
             64: "rook-" + this.colors.user,
-        }
+        };
         this.user = {
             side : "bottom",
-            color : this.colors.user
+            color : this.colors.user,
+            kill : 0
         };
         this.bot = {
             side : "top",
-            color : this.colors.bot
+            color : this.colors.bot,
+            kill : 0
+        };
+        this.classes = {
+            cell : 'cell',
+            possibleMove : 'possible-move',
+            wrongMove : 'wrong-move',
+            hold : 'hold',
+            arrowUp : 'arrow-up',
+            arrowDown : 'arrow-down',
+            arrowLeft : 'arrow-left',
+            arrowRight : 'arrow-right',
+            arrowKill : 'arrow-kill',
+            crosshairMove : 'crosshair-move',
+            crosshairKill : 'crosshair-kill',
+            killMove : 'kill-move'
+        };
+        this.figures = {
+            pawn : 'pawn',
+            rook : 'rook',
+            bishop : 'bishop',
+            knight : 'knight',
+            king : 'king',
+            queen : 'queen'
         }
     }
 
-    moveFigure(figure, from, to) {
+    moveFigure(figure, from, to)
+    {
         let className = figure.className.split(' ')[0];
-        let figureArray = className.split("-");
-        let name = figureArray[0];
-        let color = figureArray[1];
+        let color = className.split("-")[1];
         let fromInteger = from.split('-')[1];
         let toInteger = to.split('-')[1];
-        let colorQueue = new HandlerUtil().whoQueue();
-        if (colorQueue === color && this.checkMove(to)) {
-            document.getElementById(from).classList.remove(className);
-            document.getElementById(from).classList.remove('hold');
-            document.getElementById(from).classList.add('cell');
-            document.getElementById(to).classList.add(className);
-            let tmp = this.position[fromInteger];
+        let historyResult = "[move] " + from + " -> " + to;
+        this.history.push(historyResult);
+        this.pushHistory(historyResult);
+        this.queue = new HandlerUtil().whoQueue();
+        if (this.queue === color && this.checkMove(to))
+        {
+            let cellFrom = document.getElementById(from);
+            let cellTo = document.getElementById(to);
+            cellFrom.classList.remove(className);
+            cellFrom.classList.remove(this.classes.hold);
+            cellFrom.classList.add(this.classes.cell);
+            if (this.position[toInteger] !== null)
+            {
+                this.eatFigure(from, to);
+                cellTo.classList.remove(this.position[toInteger]);
+            }
+            cellTo.classList.add(className);
+            this.position[toInteger] = this.position[fromInteger];
             this.position[fromInteger] = null;
-            this.position[toInteger] = tmp;
             new HandlerUtil().toggleQueue();
             new HandlerUtil().clearDecals();
-        } else {
-            console.log('wrong-move');
-            this.setPositionClass(to, 'wrong-move');
+        } else
+        {
+            this.setPositionClass(to, this.classes.wrongMove);
             new HandlerUtil().clearDecals();
         }
     }
 
-    checkMove(pos) {
-        let cell = document.getElementById(pos).className.match('possible-move');
-        return cell !== null;
+    pushHistory(content) {
+        let historyBlock = document.getElementById('history');
+        let newElement = document.createElement('p');
+        let newContent = document.createTextNode(content);
+        newElement.appendChild(newContent);
+        historyBlock.appendChild(newElement);
     }
 
-    setPositionClass(pos, className) {
+    checkMove(pos)
+    {
+        let possibleCell = document.getElementById(pos).className.match(this.classes.possibleMove);
+        let killCell = document.getElementById(pos).className.match(this.classes.killMove);
+        return possibleCell !== null || killCell != null;
+    }
+
+    setPositionClass(pos, className)
+    {
         let cell = document.getElementById(pos);
-        cell.classList.remove('cell');
+        cell.classList.remove(this.classes.cell);
         cell.classList.add(className);
-        setTimeout(() => {
+        setTimeout(() =>
+        {
             this.deletePositionClass(pos, className);
-            }, 1000);
+        }, 1000);
     }
 
-    deletePositionClass(pos, className) {
+    deletePositionClass(pos, className)
+    {
         let cell = document.getElementById(pos);
         cell.classList.remove(className);
-        cell.classList.add('cell');
+        cell.classList.add(this.classes.cell);
     }
 
-    eatFigure(killer, meal) {}
-
-    possibleMove(figure) {
+    possibleMove(figure)
+    {
         this.queue = new HandlerUtil().whoQueue();
+        this.queueNegative = this.queue === "white" ? "black" : "white";
         let id = figure.attributes.id.value;
         let pos = id.split('-')[1];
-        let peace = this.position[pos].split("-")[0];
-        switch (peace) {
-            case "pawn":
-                if (pos >= 49 && pos <= 56 && this.queue === this.user.color && this.position[pos] === 'pawn-'+this.queue) {
-                    let firstPosition = (parseInt(pos) - 8).toString();
-                    let secondPosition = (parseInt(pos) - 16).toString();
-                    let positions = [firstPosition, secondPosition];
-                    if (this.checkCellToPossibleMove(firstPosition) === true) {
-                        for (let item of positions) {
-                            if (this.checkCellToPossibleMove(item) === true) {
-                                this.setCellToPossibleMove(item);
-                            }
-                        }
-                    }
-                } else if (pos >= 9 && pos <= 16 && this.queue === this.bot.color && this.position[pos] === 'pawn-'+this.queue) {
-                    let firstPosition = (parseInt(pos) + 8).toString();
-                    let secondPosition = (parseInt(pos) + 16).toString();
-                    let positions = [firstPosition, secondPosition];
-                    if (this.checkCellToPossibleMove(firstPosition) === true) {
-                        for (let item of positions) {
-                            if (this.checkCellToPossibleMove(item) === true) {
-                                this.setCellToPossibleMove(item);
-                            }
-                        }
-                    }
-                } else if (pos < 49 && pos > 8 && this.queue === this.user.color && this.position[pos] === 'pawn-'+this.queue) {
-                    let nextPosition = (parseInt(pos) - 8).toString();
-                    if (this.checkCellToPossibleMove(nextPosition) === true) {
-                        this.setCellToPossibleMove(nextPosition);
-                    }
-                } else if (pos > 16 && pos < 57 && this.queue === this.bot.color && this.position[pos] === 'pawn-'+this.queue) {
-                    let nextPosition = (parseInt(pos) + 8).toString();
-                    if (this.checkCellToPossibleMove(nextPosition) === true) {
-                        this.setCellToPossibleMove(nextPosition);
-                    }
-                }
+        this.figure = this.position[pos].split("-")[0];
+        this.current = pos;
+        switch (this.figure) {
+            case this.figures.pawn:
+                this.analyzePawnMove(pos);
+                break;
+            case this.figures.rook:
+                this.analyzeRookMove(pos);
+                break;
+            case this.figures.knight:
+                this.analyzeKnightMove(pos);
+                break;
+            case this.figures.bishop:
+                this.analyzeBishopMove(pos);
+                break;
+            case this.figures.queen:
+                this.analyzeQueenMove(pos);
+                break;
+            case this.figures.king:
+                this.analyzeKingMove(pos);
                 break;
             default:
                 break;
         }
     }
 
-    setCellToPossibleMove(pos) {
-        document.getElementById('cell-'+pos).classList.remove('cell');
-        document.getElementById('cell-'+pos).classList.add('possible-move');
+    analyzePawnMove(pos) {
+        let line = this.getLine(pos);
+        let lineInt = parseInt(line);
+        let posInt = parseInt(pos);
+        let indexOfLine = this.lines[line].indexOf(posInt);
+        if (lineInt === 7 && this.queue === this.user.color)
+        {
+            let firstPosition = this.lines[(lineInt-1).toString()][indexOfLine].toString();
+            let secondPosition = this.lines[(lineInt-2).toString()][indexOfLine].toString();
+            let leftPosition = this.lines[(lineInt-1).toString()][indexOfLine-1].toString();
+            let rightPosition = this.lines[(lineInt-1).toString()][indexOfLine+1].toString();
+            let positionsMove = [firstPosition, secondPosition];
+            let positionsKill = [leftPosition, rightPosition];
+            if (this.position[firstPosition] === null)
+            {
+                for (let item of positionsMove)
+                {
+                    if (this.checkCellToPossibleMove(item))
+                    {
+                        this.setCellToPossibleMove(item);
+                    }
+                }
+            }
+            for (let item of positionsKill)
+            {
+                if (this.checkCellToEat(item))
+                {
+                    this.setCellToEat(item);
+                }
+            }
+        } else if (lineInt === 2 && this.queue === this.bot.color)
+        {
+            let firstPosition = this.lines[(lineInt+1).toString()][indexOfLine].toString();
+            let secondPosition = this.lines[(lineInt+2).toString()][indexOfLine].toString();
+            let leftPosition = this.lines[(lineInt+1).toString()][indexOfLine-1].toString();
+            let rightPosition = this.lines[(lineInt+1).toString()][indexOfLine+1].toString();
+            let positionsMove = [firstPosition, secondPosition];
+            let positionsKill = [leftPosition, rightPosition];
+            if (this.position[firstPosition] === null)
+            {
+                for (let item of positionsMove)
+                {
+                    if (this.checkCellToPossibleMove(item))
+                    {
+                        this.setCellToPossibleMove(item);
+                    }
+                }
+            }
+            for (let item of positionsKill)
+            {
+                if (this.checkCellToEat(item))
+                {
+                    this.setCellToEat(item);
+                }
+            }
+        } else if (pos < 49 && pos > 8 && this.queue === this.user.color)
+        {
+            let nextPosition = this.lines[(lineInt-1).toString()][indexOfLine].toString();
+            let leftPosition = this.lines[(lineInt-1).toString()][indexOfLine-1].toString();
+            let rightPosition = this.lines[(lineInt-1).toString()][indexOfLine+1].toString();
+            let positionsKill = [leftPosition, rightPosition];
+            if (this.position[nextPosition] === null)
+            {
+                this.setCellToPossibleMove(nextPosition);
+            }
+            for (let item of positionsKill)
+            {
+                if (item !== null && this.checkCellToEat(item))
+                {
+                    this.setCellToEat(item);
+                }
+            }
+        } else if (pos > 16 && pos < 57 && this.queue === this.bot.color)
+        {
+            let nextPosition = this.lines[(lineInt+1).toString()][indexOfLine].toString();
+            let leftPosition = this.lines[(lineInt+1).toString()][indexOfLine-1].toString();
+            let rightPosition = this.lines[(lineInt+1).toString()][indexOfLine+1].toString();
+            let positionsKill = [leftPosition, rightPosition];
+            if (this.position[nextPosition] === null)
+            {
+                this.setCellToPossibleMove(nextPosition);
+            }
+            for (let item of positionsKill)
+            {
+                if (item !== null && this.checkCellToEat(item))
+                {
+                    this.setCellToEat(item);
+                }
+            }
+        }
     }
 
-    checkCellToPossibleMove(pos) {
-        let cell = document.getElementById('cell-'+pos).className.split(" ").length;
-        return cell === 1;
+    analyzeRookMove(pos) {
+        let line = this.getLine(pos);
+        let lineArr = this.lines[line];
+        let breakpoint = lineArr.indexOf(parseInt(pos));
+        let leftMove = lineArr.slice(0, breakpoint).reverse();
+        let rightMove = lineArr.slice(breakpoint+1);
+        for (let i = 8; parseInt(pos)+i < 65; i+=8)
+        {
+            let nextPosition = (parseInt(pos)+i).toString();
+            if (this.checkCellToPossibleMove(nextPosition))
+            {
+                if (this.checkCellToEat(nextPosition))
+                {
+                    this.setCellToEat(nextPosition);
+                    break;
+                } else
+                {
+                    this.setCellToPossibleMove(nextPosition);
+                }
+            } else
+            {
+                break;
+            }
+        }
+        for (let i = 8; parseInt(pos)-i > 0; i += 8)
+        {
+            let nextPosition = (parseInt(pos)-i).toString();
+            if (this.checkCellToPossibleMove(nextPosition))
+            {
+                if (this.checkCellToEat(nextPosition))
+                {
+                    this.setCellToEat(nextPosition);
+                    break;
+                } else
+                {
+                    this.setCellToPossibleMove(nextPosition);
+                }
+            } else
+            {
+                break;
+            }
+        }
+        if (leftMove.length > 0)
+        {
+            for (let item of leftMove)
+            {
+                let nextPosition = item.toString();
+                if (this.checkCellToPossibleMove(nextPosition))
+                {
+                    if (this.checkCellToEat(nextPosition))
+                    {
+                        this.setCellToEat(nextPosition);
+                        break;
+                    } else
+                    {
+                        this.setCellToPossibleMove(nextPosition);
+                    }
+                } else
+                {
+                    break;
+                }
+            }
+        }
+        if (rightMove.length > 0)
+        {
+            for (let item of rightMove)
+            {
+                let nextPosition = item.toString();
+                if (this.checkCellToPossibleMove(nextPosition))
+                {
+                    if (this.checkCellToEat(nextPosition))
+                    {
+                        this.setCellToEat(nextPosition);
+                        break;
+                    } else {
+                        this.setCellToPossibleMove(nextPosition);
+                    }
+                } else
+                {
+                    break;
+                }
+            }
+        }
     }
 
-    possibleEat(figure) {}
+    analyzeKnightMove(pos) {
+        let posInt = parseInt(pos), movePos = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]], moveArr = [];
+        let line = this.getLine(pos);
+        let lineInt = parseInt(line);
+        let indexOfLine = this.lines[line].indexOf(posInt);
+        for (let i = 0; i < 8; i++)
+        {
+            let nextLine = lineInt+movePos[i][0];
+            let nextPos = indexOfLine+movePos[i][1];
+            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 8)
+            {
+                let nextPosition = this.lines[nextLine.toString()][nextPos];
+                moveArr.push(nextPosition.toString());
+            } else
+            {
+                moveArr.push(0);
+            }
+        }
+        for (let item of moveArr)
+        {
+            if (parseInt(item) > 0 && this.checkCellToPossibleMove(item))
+            {
+                if (this.checkCellToEat(item))
+                {
+                    this.setCellToEat(item);
+                } else
+                {
+                    this.setCellToPossibleMove(item);
+                }
+            }
+        }
+    }
+
+    analyzeBishopMove(pos) {
+        let posInt = parseInt(pos);
+        let movePos = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+        let moveArr = [[], [], [], []];
+        let line = this.getLine(pos);
+        let lineInt = parseInt(line);
+        let indexOfLine = this.lines[line].indexOf(posInt);
+        for (let i = 0; i < 4; i++)
+        {
+            moveArr[i] = this.getMoveArr(movePos, lineInt, indexOfLine, i);
+        }
+        for (let arr of moveArr)
+        {
+            for (let item of arr)
+            {
+                if (item > 0 && this.checkCellToPossibleMove(item.toString()))
+                {
+                    if (this.checkCellToEat(item.toString()))
+                    {
+                        this.setCellToEat(item.toString());
+                        break;
+                    } else
+                    {
+                        this.setCellToPossibleMove(item.toString());
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    analyzeQueenMove(pos) {
+        let posInt = parseInt(pos);
+        let movePos = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+        let moveArr = [[], [], [], [], [], [], [], []];
+        let line = this.getLine(pos);
+        let lineInt = parseInt(line);
+        let indexOfLine = this.lines[line].indexOf(posInt);
+        for (let i = 0; i < 8; i++)
+        {
+            moveArr[i] = this.getMoveArr(movePos, lineInt, indexOfLine, i);
+        }
+        for (let arr of moveArr)
+        {
+            for (let item of arr)
+            {
+                if (item > 0 && this.checkCellToPossibleMove(item.toString()))
+                {
+                    if (this.checkCellToEat(item.toString()))
+                    {
+                        this.setCellToEat(item.toString());
+                        break;
+                    } else
+                    {
+                        this.setCellToPossibleMove(item.toString());
+                    }
+                }
+            }
+        }
+    }
+
+    analyzeKingMove(pos) {
+        let posInt = parseInt(pos);
+        let movePos = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+        let moveArr = [];
+        let line = this.getLine(pos);
+        let lineInt = parseInt(line);
+        let indexOfLine = this.lines[line].indexOf(posInt);
+        for (let i = 0; i < 8; i++)
+        {
+            let nextLine = lineInt + movePos[i][0];
+            let nextPos = indexOfLine + movePos[i][1];
+            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 9)
+            {
+                moveArr.push(this.lines[nextLine.toString()][nextPos]);
+            } else {
+                moveArr.push(0);
+            }
+        }
+        for (let item of moveArr)
+        {
+            if (item > 0 && this.checkCellToPossibleMove(item.toString()))
+            {
+                if (this.checkCellToEat(item.toString()))
+                {
+                    this.setCellToEat(item.toString());
+                } else
+                {
+                    this.setCellToPossibleMove(item.toString());
+                }
+            }
+        }
+    }
+
+    getMoveArr(movePos, lineInt, indexOfLine, i)
+    {
+        let moveArr = []
+        for (let j = 1; j < 8; j++)
+        {
+            let nextLine = lineInt + (movePos[i][0] * j);
+            let nextPos = indexOfLine + (movePos[i][1] * j);
+            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 8)
+            {
+                let nextMove = this.lines[nextLine.toString()][nextPos];
+                moveArr.push(nextMove);
+                if (this.position[nextMove.toString()] !== null)
+                {
+                    break;
+                }
+            } else {
+                moveArr.push(0);
+            }
+        }
+        return moveArr;
+    }
+
+    getLine(pos) {
+        let posInt = parseInt(pos);
+        let condition = posInt / 8 > parseInt(posInt / 8);
+        let line = null;
+        if (condition)
+        {
+            line = parseInt(posInt / 8) + 1;
+        } else
+        {
+            line = parseInt(posInt / 8);
+        }
+        return line.toString();
+    }
+
+    setCellToPossibleMove(pos)
+    {
+        let cell = document.getElementById(this.classes.cell+'-'+pos);
+        cell.classList.remove(this.classes.cell);
+        cell.classList.add(this.classes.possibleMove);
+    }
+
+    checkCellToPossibleMove(pos)
+    {
+        let cell = document.getElementById('cell-'+pos).className;
+        if (cell === null)
+        {
+            return false;
+        } else
+        {
+            return cell.match(this.classes.cell) !== null && cell.match(this.queue) === null;
+        }
+    }
+
+    checkCellToEat(pos)
+    {
+        let cell = document.getElementById('cell-'+pos).className;
+        if (cell === null)
+        {
+            return false;
+        } else
+        {
+            return cell.match(this.classes.cell) !== null && cell.match(this.queueNegative) !== null;
+        }
+    }
+
+    setCellToEat(pos) {
+        let cell = document.getElementById(this.classes.cell+'-'+pos);
+        cell.classList.remove(this.classes.cell);
+        cell.classList.add(this.classes.killMove);
+    }
+
+    eatFigure(murder, meal) {
+        let mealId = meal.split("-")[1];
+        let historyResult = "[eat] " + murder + " -> " + meal;
+        this.history.push(historyResult);
+        this.pushHistory(historyResult);
+        let count = null;
+        if (this.queue === this.user.color)
+        {
+            count = this.user.kill;
+            this.user.kill += 1;
+        } else
+        {
+            count = this.bot.kill;
+            this.bot.kill += 1;
+        }
+        let cell = document.getElementById(this.queue+"-eat-"+(count+1).toString());
+        cell.classList.add(this.position[mealId]);
+    }
 
     possibleChangeFigure(figure) {}
 
-    isCheck() {}
-
-    ifCheckMate() {}
-}
-
-class EventListener {
-    constructor(chess) {
-        console.log('EventListener');
-        this.game = chess;
+    isCheck() {
+        if (this.queue === this.user.color) {
+            let king = document.getElementsByClassName('king-'+this.user.color);
+            if (king.className.match("kill-move") !== null) {
+                this.setPositionClass(king.item(0).attributes.id.value, 'check-move');
+            }
+        }
     }
 
-    activate() {
-        document.querySelectorAll('.cell').forEach(item => {
-            item.addEventListener('click', () => {
-                if (item.className.split(" ").length === 2) {
+    isCheckMate() {}
+}
+
+class EventListener
+{
+    constructor(chess)
+    {
+        this.game = chess;
+        this.queue = null;
+    }
+
+    activate()
+    {
+        document.querySelectorAll('.cell').forEach(item =>
+        {
+            item.addEventListener('click', () =>
+            {
+                this.queue = new HandlerUtil().whoQueue();
+                if (
+                    item.className.match(this.game.classes.cell) !== null &&
+                    item.className.match(this.queue) !== null
+                )
+                {
                     new HandlerUtil().clearDecals();
-                    item.classList.remove('cell');
-                    item.classList.add('hold');
+                    item.classList.remove(this.game.classes.cell);
+                    item.classList.add(this.game.classes.hold);
                     this.game.possibleMove(item);
-                } else if (item.className.split(" ").length === 1) {
-                    let figure = document.querySelector('.hold');
-                    if (figure !== null) {
-                        this.game.moveFigure(figure, figure.attributes.id.value, item.attributes.id.value);
-                    }
+                } else if (item.className.match(this.game.classes.possibleMove) !== null)
+                {
+                    let figure = document.querySelector("."+this.game.classes.hold);
+                    this.game.moveFigure(figure, figure.attributes.id.value, item.attributes.id.value);
+                } else if (item.className.match(this.game.classes.killMove) !== null) {
+                    let figure = document.querySelector("."+this.game.classes.hold);
+                    this.game.moveFigure(figure, figure.attributes.id.value, item.attributes.id.value);
                 }
             });
         });
     }
 }
 
-class StartGame {
-    constructor(userColor) {
-        console.log('StartGame');
+class StartGame
+{
+    constructor(userColor)
+    {
         this.user = {
             color : userColor,
             side : "bottom"
@@ -236,7 +658,8 @@ class StartGame {
         };
     }
 
-    activate() {
+    activate()
+    {
         let h1 = document.getElementById('data');
         h1.setAttribute('aria-user', this.user.color);
         h1.setAttribute('aria-bot', this.bot.color);
@@ -244,8 +667,8 @@ class StartGame {
         this.fillSide(this.bot.side, this.bot.color);
     }
 
-    fillSide(side, color) {
-        console.log(side, color)
+    fillSide(side, color)
+    {
         const sideColor = {
             "black": {
                 pawn: "pawn-black",
@@ -313,57 +736,70 @@ class StartGame {
             king: d8
         }
 
-        switch (side) {
+        switch (side)
+        {
             case "top":
-                for (let item of top.rook) {
+                for (let item of top.rook)
+                {
                     item.classList.add(sideColor[color].rook);
                 }
-                for (let item of top.knights) {
+                for (let item of top.knights)
+                {
                     item.classList.add(sideColor[color].knights);
                 }
-                for (let item of top.bishop) {
+                for (let item of top.bishop)
+                {
                     item.classList.add(sideColor[color].bishop);
                 }
                 top.queen.classList.add(sideColor[color].queen);
                 top.king.classList.add(sideColor[color].king);
-                for (let i = 9; i < 17; i++) {
+                for (let i = 9; i < 17; i++)
+                {
                     document.getElementById('cell-' + i.toString()).classList.add(sideColor[color].pawn);
                 }
                 break;
             case "bottom":
-                for (let item of bottom.rook) {
+                for (let item of bottom.rook)
+                {
                     item.classList.add(sideColor[color].rook);
                 }
-                for (let item of bottom.knights) {
+                for (let item of bottom.knights)
+                {
                     item.classList.add(sideColor[color].knights);
                 }
-                for (let item of bottom.bishop) {
+                for (let item of bottom.bishop)
+                {
                     item.classList.add(sideColor[color].bishop);
                 }
                 bottom.queen.classList.add(sideColor[color].queen);
                 bottom.king.classList.add(sideColor[color].king);
-                for (let i = 49; i < 57; i++) {
+                for (let i = 49; i < 57; i++)
+                {
                     document.getElementById('cell-' + i.toString()).classList.add(sideColor[color].pawn);
                 }
                 break;
             default:
-                window.alert("Error! Wrong Callback!");
                 break;
         }
     }
 }
 
-class HandlerUtil {
-    constructor() {
+class HandlerUtil
+{
+    constructor()
+    {
     }
 
-    whoQueue() {
+    whoQueue()
+    {
         return document.getElementById('data').attributes.getNamedItem('aria-move').value;
     }
 
-    toggleQueue() {
+    toggleQueue()
+    {
         let color = document.getElementById('data').attributes.getNamedItem('aria-move').value;
-        switch (color) {
+        switch (color)
+        {
             case "white":
                 document.getElementById('data').attributes.getNamedItem('aria-move').value = 'black';
                 break;
@@ -375,7 +811,8 @@ class HandlerUtil {
         }
     }
 
-    parseColors() {
+    parseColors()
+    {
         let userColor = document.getElementById('data').attributes.getNamedItem('aria-user').value;
         let botColor = document.getElementById('data').attributes.getNamedItem('aria-bot').value;
         return {
@@ -384,13 +821,21 @@ class HandlerUtil {
         };
     }
 
-    clearDecals() {
-        document.querySelectorAll('.hold').forEach(item => {
+    clearDecals()
+    {
+        document.querySelectorAll('.hold').forEach(item =>
+        {
             item.classList.remove('hold');
             item.classList.add('cell');
         });
-        document.querySelectorAll('.possible-move').forEach(item => {
+        document.querySelectorAll('.possible-move').forEach(item =>
+        {
             item.classList.remove('possible-move');
+            item.classList.add('cell');
+        });
+        document.querySelectorAll('.kill-move').forEach(item =>
+        {
+            item.classList.remove('kill-move');
             item.classList.add('cell');
         });
     }

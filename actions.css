@@ -13,7 +13,16 @@
     box-shadow: 0 0 .2rem .2rem lawngreen;
 }
 
-.possible-move:hover {
+.kill-move {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    background-color: rgba(255, 10, 10, .6);
+    box-shadow: 0 0 .2rem .2rem red;
+}
+
+.possible-move:hover,
+.kill-move:hover{
     transform: scale(1.1);
 }
 
@@ -22,4 +31,18 @@
     width: 4rem;
     height: 4rem;
     background-color: indianred;
+}
+
+.check-move {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    background-color: orangered;
+}
+
+.checkmate-move {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    background-color: darkred;
 }
