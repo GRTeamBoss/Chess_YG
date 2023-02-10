@@ -1,31 +1,221 @@
 document.onreadystatechange = () => {
+    localStorage.setItem("startColor", "white");
     if (document.readyState === "complete") {
-        new StartGame("white").activate();
-        new EventListener(new Chess()).activate();
+        const startColor = localStorage.getItem("startColor");
+        new StartGame(startColor).activate();
+        new EventListener().activate();
+        localStorage.removeItem("startColor");
+    }
+};
+
+class EventListener {
+    constructor() {
+        this.game = new Chess();
+        this.queue = null;
+    }
+
+    activate() {
+        document
+            .querySelectorAll("." + this.game.classes.cell)
+            .forEach((item) => {
+                item.addEventListener("click", () => {
+                    this.queue = localStorage.getItem("moveColor");
+                    if (
+                        item.className.match(this.game.classes.cell) !== null &&
+                        item.className.match(this.queue) !== null
+                    ) {
+                        new HandlerUtil().clearDecals();
+                        item.classList.remove(this.game.classes.cell);
+                        item.classList.add(this.game.classes.hold);
+                        this.game.setPossibleMove(item);
+                    } else if (
+                        item.className.match(this.game.classes.possibleMove) !==
+                        null
+                    ) {
+                        let figure = document.querySelector(
+                            "." + this.game.classes.hold
+                        );
+                        this.game.moveFigure(
+                            figure,
+                            figure.attributes.id.value,
+                            item.attributes.id.value
+                        );
+                    } else if (
+                        item.className.match(this.game.classes.killMove) !==
+                        null
+                    ) {
+                        let figure = document.querySelector(
+                            "." + this.game.classes.hold
+                        );
+                        this.game.moveFigure(
+                            figure,
+                            figure.attributes.id.value,
+                            item.attributes.id.value
+                        );
+                    }
+                });
+            });
     }
 }
+
+class StartGame {
+    constructor(userColor) {
+        this.user = {
+            name: "user",
+            color: userColor,
+            side: "bottom",
+        };
+        this.bot = {
+            name: "bot",
+            color: userColor === "white" ? "black" : "white",
+            side: "top",
+        };
+    }
+
+    activate() {
+        localStorage.setItem("userColor", this.user.color);
+        localStorage.setItem("botColor", this.bot.color);
+        localStorage.setItem("moveColor", this.user.color);
+        localStorage.setItem("currentMove", this.user.name);
+        this.fillSide(this.user.side, this.user.color);
+        this.fillSide(this.bot.side, this.bot.color);
+    }
+
+    fillSide(side, color) {
+        const sideColor = {
+            black: {
+                pawn: "pawn-black",
+                rook: "rook-black",
+                knights: "knight-black",
+                bishop: "bishop-black",
+                queen: "queen-black",
+                king: "king-black",
+            },
+            white: {
+                pawn: "pawn-white",
+                rook: "rook-white",
+                knights: "knight-white",
+                bishop: "bishop-white",
+                queen: "queen-white",
+                king: "king-white",
+            },
+        };
+
+        /* TOP */
+        // rook
+        let h1 = document.getElementById("cell-1");
+        let a1 = document.getElementById("cell-8");
+        // knights
+        let g1 = document.getElementById("cell-2");
+        let b1 = document.getElementById("cell-7");
+        // bishop
+        let f1 = document.getElementById("cell-3");
+        let c1 = document.getElementById("cell-6");
+        // queen
+        let e1 = document.getElementById("cell-4");
+        // king
+        let d1 = document.getElementById("cell-5");
+        /* END TOP */
+
+        /* BOTTOM */
+        // rook
+        let h8 = document.getElementById("cell-57");
+        let a8 = document.getElementById("cell-64");
+        // knights
+        let g8 = document.getElementById("cell-58");
+        let b8 = document.getElementById("cell-63");
+        // bishop
+        let f8 = document.getElementById("cell-59");
+        let c8 = document.getElementById("cell-62");
+        // queen
+        let e8 = document.getElementById("cell-60");
+        // king
+        let d8 = document.getElementById("cell-61");
+        /* END BOTTOM*/
+
+        const top = {
+            name: "top",
+            rook: [h1, a1],
+            knights: [g1, b1],
+            bishop: [f1, c1],
+            queen: e1,
+            king: d1,
+        };
+
+        const bottom = {
+            name: "bottom",
+            rook: [h8, a8],
+            knights: [g8, b8],
+            bishop: [f8, c8],
+            queen: e8,
+            king: d8,
+        };
+
+        switch (side) {
+            case top.name:
+                for (let item of top.rook) {
+                    item.classList.add(sideColor[color].rook);
+                }
+                for (let item of top.knights) {
+                    item.classList.add(sideColor[color].knights);
+                }
+                for (let item of top.bishop) {
+                    item.classList.add(sideColor[color].bishop);
+                }
+                top.queen.classList.add(sideColor[color].queen);
+                top.king.classList.add(sideColor[color].king);
+                for (let i = 9; i < 17; i++) {
+                    document
+                        .getElementById("cell-" + i.toString())
+                        .classList.add(sideColor[color].pawn);
+                }
+                break;
+            case bottom.name:
+                for (let item of bottom.rook) {
+                    item.classList.add(sideColor[color].rook);
+                }
+                for (let item of bottom.knights) {
+                    item.classList.add(sideColor[color].knights);
+                }
+                for (let item of bottom.bishop) {
+                    item.classList.add(sideColor[color].bishop);
+                }
+                bottom.queen.classList.add(sideColor[color].queen);
+                bottom.king.classList.add(sideColor[color].king);
+                for (let i = 49; i < 57; i++) {
+                    document
+                        .getElementById("cell-" + i.toString())
+                        .classList.add(sideColor[color].pawn);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 class Chess {
     constructor() {
-        this.current = null;
-        this.figure = null;
-        this.queue = null;
-        this.queueNegative = null;
+        this.position = undefined;
+        this.figure = undefined;
+        this.queue = undefined;
         this.check = false;
         this.checkMate = false;
-        this.allowedMove = [];
-        this.history = [];
-        this.colors = new HandlerUtil().parseColors();
+        this.colors = {
+            user: localStorage.getItem("userColor"),
+            bot: localStorage.getItem("botColor")
+        }
         this.lines = {
-            1 : [1, 2, 3, 4, 5, 6, 7, 8],
-            2 : [9, 10, 11, 12, 13, 14, 15, 16],
-            3 : [17, 18, 19, 20, 21, 22, 23, 24],
-            4 : [25, 26, 27, 28, 29, 30, 31, 32],
-            5 : [33, 34, 35, 36, 37, 38, 39, 40],
-            6 : [41, 42, 43, 44, 45, 46, 47, 48],
-            7 : [49, 50, 51, 52, 53, 54, 55, 56],
-            8 : [57, 58, 59, 60, 61, 62, 63, 64]
+            1: [1, 2, 3, 4, 5, 6, 7, 8],
+            2: [9, 10, 11, 12, 13, 14, 15, 16],
+            3: [17, 18, 19, 20, 21, 22, 23, 24],
+            4: [25, 26, 27, 28, 29, 30, 31, 32],
+            5: [33, 34, 35, 36, 37, 38, 39, 40],
+            6: [41, 42, 43, 44, 45, 46, 47, 48],
+            7: [49, 50, 51, 52, 53, 54, 55, 56],
+            8: [57, 58, 59, 60, 61, 62, 63, 64],
         };
-        this.position = {
+        this.positions = {
             1: "rook-" + this.colors.bot,
             2: "knight-" + this.colors.bot,
             3: "bishop-" + this.colors.bot,
@@ -42,10 +232,38 @@ class Chess {
             14: "pawn-" + this.colors.bot,
             15: "pawn-" + this.colors.bot,
             16: "pawn-" + this.colors.bot,
-            17: null, 18: null, 19: null, 20: null, 21: null, 22: null, 23: null, 24: null,
-            25: null, 26: null, 27: null, 28: null, 29: null, 30: null, 31: null, 32: null,
-            33: null, 34: null, 35: null, 36: null, 37: null, 38: null, 39: null, 40: null,
-            41: null, 42: null, 43: null, 44: null, 45: null, 46: null, 47: null, 48: null,
+            17: null,
+            18: null,
+            19: null,
+            20: null,
+            21: null,
+            22: null,
+            23: null,
+            24: null,
+            25: null,
+            26: null,
+            27: null,
+            28: null,
+            29: null,
+            30: null,
+            31: null,
+            32: null,
+            33: null,
+            34: null,
+            35: null,
+            36: null,
+            37: null,
+            38: null,
+            39: null,
+            40: null,
+            41: null,
+            42: null,
+            43: null,
+            44: null,
+            45: null,
+            46: null,
+            47: null,
+            48: null,
             49: "pawn-" + this.colors.user,
             50: "pawn-" + this.colors.user,
             51: "pawn-" + this.colors.user,
@@ -64,115 +282,84 @@ class Chess {
             64: "rook-" + this.colors.user,
         };
         this.user = {
-            side : "bottom",
-            color : this.colors.user,
-            kill : 0
+            name: "user",
+            color: localStorage.getItem("userColor"),
+            side: "bottom",
+            kill: 0,
         };
         this.bot = {
-            side : "top",
-            color : this.colors.bot,
-            kill : 0
+            name: "bot",
+            color: localStorage.getItem("botColor"),
+            side: "top",
+            kill: 0,
         };
         this.classes = {
-            cell : 'cell',
-            possibleMove : 'possible-move',
-            wrongMove : 'wrong-move',
-            hold : 'hold',
-            arrowUp : 'arrow-up',
-            arrowDown : 'arrow-down',
-            arrowLeft : 'arrow-left',
-            arrowRight : 'arrow-right',
-            arrowKill : 'arrow-kill',
-            crosshairMove : 'crosshair-move',
-            crosshairKill : 'crosshair-kill',
-            killMove : 'kill-move'
+            cell: "cell",
+            hold: "hold",
+            possibleMove: "possible-move",
+            wrongMove: "wrong-move",
+            killMove: "kill-move",
+            chekMove: "check-move",
+            checkMateMove: "checkmate-move",
         };
         this.figures = {
-            pawn : 'pawn',
-            rook : 'rook',
-            bishop : 'bishop',
-            knight : 'knight',
-            king : 'king',
-            queen : 'queen'
-        }
+            pawn: "pawn",
+            rook: "rook",
+            bishop: "bishop",
+            knight: "knight",
+            king: "king",
+            queen: "queen",
+        };
     }
 
-    moveFigure(figure, from, to)
-    {
-        let className = figure.className.split(' ')[0];
-        let color = className.split("-")[1];
-        let fromInteger = from.split('-')[1];
-        let toInteger = to.split('-')[1];
-        let historyResult = "[move] " + from + " -> " + to;
-        this.history.push(historyResult);
-        this.pushHistory(historyResult);
+    moveFigure(figure, from, to) {
+        let cellTo = undefined;
         this.queue = new HandlerUtil().whoQueue();
-        if (this.queue === color && this.checkMove(to))
-        {
-            let cellFrom = document.getElementById(from);
-            let cellTo = document.getElementById(to);
-            cellFrom.classList.remove(className);
+        let figureId = figure.attributes.id.value.split("-")[1];
+        let fromId = from.split("-")[1];
+        let toId = to.split("-")[1];
+        let figureClassName = this.positions[figureId];
+        let figureName = figureClassName.split("-")[0];
+        let figureColor = figureClassName.split("-")[1];
+        let cellFrom = document.getElementById(from);
+        if (this.queue.color === figureColor && this.checkMove(to)) {
+            cellTo = document.getElementById(to);
+            cellFrom.classList.remove(figureClassName);
             cellFrom.classList.remove(this.classes.hold);
             cellFrom.classList.add(this.classes.cell);
-            if (this.position[toInteger] !== null)
-            {
+            if (this.positions[toId] !== null) {
                 this.eatFigure(from, to);
-                cellTo.classList.remove(this.position[toInteger]);
+                cellTo.classList.remove(this.positions[toId]);
             }
-            cellTo.classList.add(className);
-            this.position[toInteger] = this.position[fromInteger];
-            this.position[fromInteger] = null;
+            cellTo.classList.add(figureClassName);
+            this.positions[toId] = this.positions[fromId];
+            this.positions[fromId] = null;
             new HandlerUtil().toggleQueue();
             new HandlerUtil().clearDecals();
-        } else
-        {
-            this.setPositionClass(to, this.classes.wrongMove);
+        } else {
+            this.setCellClass(to, this.classes.wrongMove);
             new HandlerUtil().clearDecals();
         }
     }
 
-    pushHistory(content) {
-        let historyBlock = document.getElementById('history');
-        let newElement = document.createElement('p');
-        let newContent = document.createTextNode(content);
-        newElement.appendChild(newContent);
-        historyBlock.appendChild(newElement);
-    }
-
-    checkMove(pos)
-    {
-        let possibleCell = document.getElementById(pos).className.match(this.classes.possibleMove);
-        let killCell = document.getElementById(pos).className.match(this.classes.killMove);
+    checkMove(pos) {
+        let possibleCell = document
+            .getElementById(pos)
+            .className.match(this.classes.possibleMove);
+        let killCell = document
+            .getElementById(pos)
+            .className.match(this.classes.killMove);
         return possibleCell !== null || killCell != null;
     }
 
-    setPositionClass(pos, className)
-    {
-        let cell = document.getElementById(pos);
-        cell.classList.remove(this.classes.cell);
-        cell.classList.add(className);
-        setTimeout(() =>
-        {
-            this.deletePositionClass(pos, className);
-        }, 1000);
-    }
-
-    deletePositionClass(pos, className)
-    {
-        let cell = document.getElementById(pos);
-        cell.classList.remove(className);
-        cell.classList.add(this.classes.cell);
-    }
-
-    possibleMove(figure)
-    {
+    setPossibleMove(figure) {
+        let tmp = undefined,
+            pos = figure.attributes.id.value.split("-")[1];
         this.queue = new HandlerUtil().whoQueue();
-        this.queueNegative = this.queue === "white" ? "black" : "white";
-        let id = figure.attributes.id.value;
-        let pos = id.split('-')[1];
-        this.figure = this.position[pos].split("-")[0];
-        this.current = pos;
-        switch (this.figure) {
+        tmp = this.positions[pos].split("-")[0];
+        console.log("Set Possible Move");
+        console.log(pos, this.queue, tmp);
+        switch (tmp) {
             case this.figures.pawn:
                 this.analyzePawnMove(pos);
                 break;
@@ -196,243 +383,163 @@ class Chess {
         }
     }
 
+    eatFigure(murder, meal) {
+        let mealId = meal.split("-")[1];
+        let count = null;
+        if (this.queue === this.user.color) {
+            count = this.user.kill;
+            this.user.kill += 1;
+        } else {
+            count = this.bot.kill;
+            this.bot.kill += 1;
+        }
+        let cell = document.getElementById(
+            this.queue + "-eat-" + (count + 1).toString()
+        );
+        cell.classList.add(this.position[mealId]);
+    }
+
     analyzePawnMove(pos) {
+        let firstPosition = null,
+            secondPosition = null,
+            nextPosition = null,
+            positionsMove = null,
+            k = null,
+            n = null;
         let line = this.getLine(pos);
         let lineInt = parseInt(line);
         let posInt = parseInt(pos);
         let indexOfLine = this.lines[line].indexOf(posInt);
-        if (lineInt === 7 && this.queue === this.user.color)
-        {
-            let firstPosition = this.lines[(lineInt-1).toString()][indexOfLine].toString();
-            let secondPosition = this.lines[(lineInt-2).toString()][indexOfLine].toString();
-            let leftPosition = this.lines[(lineInt-1).toString()][indexOfLine-1].toString();
-            let rightPosition = this.lines[(lineInt-1).toString()][indexOfLine+1].toString();
-            let positionsMove = [firstPosition, secondPosition];
-            let positionsKill = [leftPosition, rightPosition];
-            if (this.position[firstPosition] === null)
-            {
-                for (let item of positionsMove)
-                {
-                    if (this.checkCellToPossibleMove(item))
-                    {
+        switch (this.queue.color) {
+            case this.user.color:
+                k = -1;
+                n = -2;
+                break;
+            case this.bot.color:
+                k = 1;
+                n = 2;
+                break;
+            default:
+                break;
+        }
+        firstPosition =
+            this.lines[(lineInt + k).toString()][indexOfLine].toString();
+        secondPosition =
+            this.lines[(lineInt + n).toString()][indexOfLine].toString();
+        nextPosition =
+            this.lines[(lineInt + k).toString()][indexOfLine].toString();
+        positionsMove = [firstPosition, secondPosition];
+        if (lineInt === 7 && this.queue.color === this.user.color || lineInt === 2 && this.queue.color === this.bot.color) {
+            if (this.positions[firstPosition] === null) {
+                for (let item of positionsMove) {
+                    if (this.checkCellToPossibleMove(item)) {
+                        console.log("Set Cell To Possible Move");
                         this.setCellToPossibleMove(item);
                     }
                 }
             }
-            for (let item of positionsKill)
-            {
-                if (this.checkCellToEat(item))
-                {
-                    this.setCellToEat(item);
-                }
-            }
-        } else if (lineInt === 2 && this.queue === this.bot.color)
-        {
-            let firstPosition = this.lines[(lineInt+1).toString()][indexOfLine].toString();
-            let secondPosition = this.lines[(lineInt+2).toString()][indexOfLine].toString();
-            let leftPosition = this.lines[(lineInt+1).toString()][indexOfLine-1].toString();
-            let rightPosition = this.lines[(lineInt+1).toString()][indexOfLine+1].toString();
-            let positionsMove = [firstPosition, secondPosition];
-            let positionsKill = [leftPosition, rightPosition];
-            if (this.position[firstPosition] === null)
-            {
-                for (let item of positionsMove)
-                {
-                    if (this.checkCellToPossibleMove(item))
-                    {
-                        this.setCellToPossibleMove(item);
-                    }
-                }
-            }
-            for (let item of positionsKill)
-            {
-                if (this.checkCellToEat(item))
-                {
-                    this.setCellToEat(item);
-                }
-            }
-        } else if (pos < 49 && pos > 8 && this.queue === this.user.color)
-        {
-            let nextPosition = this.lines[(lineInt-1).toString()][indexOfLine].toString();
-            let leftPosition = this.lines[(lineInt-1).toString()][indexOfLine-1].toString();
-            let rightPosition = this.lines[(lineInt-1).toString()][indexOfLine+1].toString();
-            let positionsKill = [leftPosition, rightPosition];
-            if (this.position[nextPosition] === null)
-            {
+        } else if (lineInt < 7 && lineInt > 1 && this.queue.color === this.user.color || lineInt > 2 && lineInt < 8 && this.queue.color === this.bot.color) {
+            if (this.positions[nextPosition] === null) {
                 this.setCellToPossibleMove(nextPosition);
-            }
-            for (let item of positionsKill)
-            {
-                if (item !== null && this.checkCellToEat(item))
-                {
-                    this.setCellToEat(item);
-                }
-            }
-        } else if (pos > 16 && pos < 57 && this.queue === this.bot.color)
-        {
-            let nextPosition = this.lines[(lineInt+1).toString()][indexOfLine].toString();
-            let leftPosition = this.lines[(lineInt+1).toString()][indexOfLine-1].toString();
-            let rightPosition = this.lines[(lineInt+1).toString()][indexOfLine+1].toString();
-            let positionsKill = [leftPosition, rightPosition];
-            if (this.position[nextPosition] === null)
-            {
-                this.setCellToPossibleMove(nextPosition);
-            }
-            for (let item of positionsKill)
-            {
-                if (item !== null && this.checkCellToEat(item))
-                {
-                    this.setCellToEat(item);
-                }
             }
         }
     }
 
     analyzeRookMove(pos) {
+        const lines = [1,2,3,4,5,6,7,8];
+        let posInt = parseInt(pos);
         let line = this.getLine(pos);
+        let lineInt = parseInt(line);
+        let indexOfLine = this.lines[line].indexOf(posInt);
         let lineArr = this.lines[line];
-        let breakpoint = lineArr.indexOf(parseInt(pos));
+        let upMove = lines.slice(0, lineInt-1);
+        let downMove = lines.slice(lineInt-1);
         let leftMove = lineArr.slice(0, breakpoint).reverse();
-        let rightMove = lineArr.slice(breakpoint+1);
-        for (let i = 8; parseInt(pos)+i < 65; i+=8)
-        {
-            let nextPosition = (parseInt(pos)+i).toString();
-            if (this.checkCellToPossibleMove(nextPosition))
-            {
-                if (this.checkCellToEat(nextPosition))
-                {
-                    this.setCellToEat(nextPosition);
-                    break;
-                } else
-                {
-                    this.setCellToPossibleMove(nextPosition);
-                }
-            } else
-            {
+        let rightMove = lineArr.slice(breakpoint + 1);
+        for (let item of upMove) {
+            let nextPosition = this.lines[item.toString()][indexOfLine].toString();
+            if (this.checkCellToPossibleMove(nextPosition)) {
+                this.setCellToPossibleMove(nextPosition);
+            } else {
                 break;
             }
         }
-        for (let i = 8; parseInt(pos)-i > 0; i += 8)
-        {
-            let nextPosition = (parseInt(pos)-i).toString();
-            if (this.checkCellToPossibleMove(nextPosition))
-            {
-                if (this.checkCellToEat(nextPosition))
-                {
-                    this.setCellToEat(nextPosition);
-                    break;
-                } else
-                {
-                    this.setCellToPossibleMove(nextPosition);
-                }
-            } else
-            {
+        for (let item of downMove) {
+            let nextPosition = this.lines[item.toString()][indexOfLine].toString();
+            if (this.checkCellToPossibleMove(nextPosition)) {
+                this.setCellToPossibleMove(nextPosition);
+            } else {
                 break;
             }
         }
-        if (leftMove.length > 0)
-        {
-            for (let item of leftMove)
-            {
-                let nextPosition = item.toString();
-                if (this.checkCellToPossibleMove(nextPosition))
-                {
-                    if (this.checkCellToEat(nextPosition))
-                    {
-                        this.setCellToEat(nextPosition);
-                        break;
-                    } else
-                    {
-                        this.setCellToPossibleMove(nextPosition);
-                    }
-                } else
-                {
-                    break;
-                }
+        for (let item of leftMove) {
+            if (this.checkCellToPossibleMove(item.toString())) {
+                this.setCellToPossibleMove(item.toString());
+            } else {
+                break;
             }
         }
-        if (rightMove.length > 0)
-        {
-            for (let item of rightMove)
-            {
-                let nextPosition = item.toString();
-                if (this.checkCellToPossibleMove(nextPosition))
-                {
-                    if (this.checkCellToEat(nextPosition))
-                    {
-                        this.setCellToEat(nextPosition);
-                        break;
-                    } else {
-                        this.setCellToPossibleMove(nextPosition);
-                    }
-                } else
-                {
-                    break;
-                }
+        for (let item of rightMove) {
+            if (this.checkCellToPossibleMove(item.toString())) {
+                this.setCellToPossibleMove(item.toString());
+            } else {
+                break;
             }
         }
     }
 
     analyzeKnightMove(pos) {
-        let posInt = parseInt(pos), movePos = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]], moveArr = [];
+        let movePos = [
+                [-2, -1],
+                [-2, 1],
+                [-1, -2],
+                [-1, 2],
+                [1, -2],
+                [1, 2],
+                [2, -1],
+                [2, 1],
+            ],
+            moveArr = [];
+        let posInt = parseInt(pos);
         let line = this.getLine(pos);
         let lineInt = parseInt(line);
         let indexOfLine = this.lines[line].indexOf(posInt);
-        for (let i = 0; i < 8; i++)
-        {
-            let nextLine = lineInt+movePos[i][0];
-            let nextPos = indexOfLine+movePos[i][1];
-            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 8)
-            {
+        for (let i = 0; i < 8; i++) {
+            let nextLine = lineInt + movePos[i][0];
+            let nextPos = indexOfLine + movePos[i][1];
+            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 8) {
                 let nextPosition = this.lines[nextLine.toString()][nextPos];
                 moveArr.push(nextPosition.toString());
-            } else
-            {
+            } else {
                 moveArr.push(0);
             }
         }
-        for (let item of moveArr)
-        {
-            if (parseInt(item) > 0 && this.checkCellToPossibleMove(item))
-            {
-                if (this.checkCellToEat(item))
-                {
-                    this.setCellToEat(item);
-                } else
-                {
-                    this.setCellToPossibleMove(item);
-                }
+        for (let item of moveArr) {
+            if (parseInt(item) > 0 && this.checkCellToPossibleMove(item)) {
+                this.setCellToPossibleMove(item);
             }
         }
     }
 
     analyzeBishopMove(pos) {
         let posInt = parseInt(pos);
-        let movePos = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+        let movePos = [
+            [-1, -1],
+            [-1, 1],
+            [1, -1],
+            [1, 1],
+        ];
         let moveArr = [[], [], [], []];
         let line = this.getLine(pos);
         let lineInt = parseInt(line);
         let indexOfLine = this.lines[line].indexOf(posInt);
-        for (let i = 0; i < 4; i++)
-        {
+        for (let i = 0; i < 4; i++) {
             moveArr[i] = this.getMoveArr(movePos, lineInt, indexOfLine, i);
         }
-        for (let arr of moveArr)
-        {
-            for (let item of arr)
-            {
-                if (item > 0 && this.checkCellToPossibleMove(item.toString()))
-                {
-                    if (this.checkCellToEat(item.toString()))
-                    {
-                        this.setCellToEat(item.toString());
-                        break;
-                    } else
-                    {
-                        this.setCellToPossibleMove(item.toString());
-                    }
-                } else {
-                    break;
+        for (let arr of moveArr) {
+            for (let item of arr) {
+                if (item > 0 && this.checkCellToPossibleMove(item.toString())) {
+                    this.setCellToPossibleMove(item.toString());
                 }
             }
         }
@@ -440,29 +547,27 @@ class Chess {
 
     analyzeQueenMove(pos) {
         let posInt = parseInt(pos);
-        let movePos = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+        let movePos = [
+            [-1, 0],
+            [-1, 1],
+            [0, 1],
+            [1, 1],
+            [1, 0],
+            [1, -1],
+            [0, -1],
+            [-1, -1],
+        ];
         let moveArr = [[], [], [], [], [], [], [], []];
         let line = this.getLine(pos);
         let lineInt = parseInt(line);
         let indexOfLine = this.lines[line].indexOf(posInt);
-        for (let i = 0; i < 8; i++)
-        {
+        for (let i = 0; i < 8; i++) {
             moveArr[i] = this.getMoveArr(movePos, lineInt, indexOfLine, i);
         }
-        for (let arr of moveArr)
-        {
-            for (let item of arr)
-            {
-                if (item > 0 && this.checkCellToPossibleMove(item.toString()))
-                {
-                    if (this.checkCellToEat(item.toString()))
-                    {
-                        this.setCellToEat(item.toString());
-                        break;
-                    } else
-                    {
-                        this.setCellToPossibleMove(item.toString());
-                    }
+        for (let arr of moveArr) {
+            for (let item of arr) {
+                if (item > 0 && this.checkCellToPossibleMove(item.toString())) {
+                    this.setCellToPossibleMove(item.toString());
                 }
             }
         }
@@ -470,50 +575,227 @@ class Chess {
 
     analyzeKingMove(pos) {
         let posInt = parseInt(pos);
-        let movePos = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+        let movePos = [
+            [-1, 0],
+            [-1, 1],
+            [0, 1],
+            [1, 1],
+            [1, 0],
+            [1, -1],
+            [0, -1],
+            [-1, -1],
+        ];
         let moveArr = [];
         let line = this.getLine(pos);
         let lineInt = parseInt(line);
         let indexOfLine = this.lines[line].indexOf(posInt);
-        for (let i = 0; i < 8; i++)
-        {
+        for (let i = 0; i < 8; i++) {
             let nextLine = lineInt + movePos[i][0];
             let nextPos = indexOfLine + movePos[i][1];
-            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 9)
-            {
+            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 9) {
                 moveArr.push(this.lines[nextLine.toString()][nextPos]);
             } else {
                 moveArr.push(0);
             }
         }
-        for (let item of moveArr)
-        {
-            if (item > 0 && this.checkCellToPossibleMove(item.toString()))
-            {
-                if (this.checkCellToEat(item.toString()))
-                {
-                    this.setCellToEat(item.toString());
-                } else
-                {
-                    this.setCellToPossibleMove(item.toString());
+        for (let item of moveArr) {
+            if (item > 0 && this.checkCellToPossibleMove(item.toString())) {
+                this.setCellToPossibleMove(item.toString());
+            }
+        }
+    }
+
+    analyzePawnEat(pos) {
+        let movePos = null;
+        switch (this.queue.color) {
+            case this.user.color:
+                movePos = [
+                    [-1, -1],
+                    [-1, 1],
+                ];
+            case this.bot.color:
+                movePos = [
+                    [1, -1],
+                    [1, 1],
+                ];
+            default:
+                break;
+        }
+        let className = "pawn-" + this.queue.color;
+        const pawns = document.getElementsByClassName(className);
+        for (let pawn of pawns) {
+            let pawnPos = pawn.attributes.id.value.split("-")[1];
+            let pawnLine = this.getLine(pawnPos);
+            let pawnIndex = this.lines[pawnLine].indexOf(parseInt(pawnPos));
+            for (let item of movePos) {
+                posEat =
+                    this.lines[(parseInt(pawnLine) + item[0]).toString()][
+                        pawnIndex + item[1]
+                    ].toString();
+                if (this.checkCellToEat(posEat) && posEat === pos) {
+                    this.setCellToEat(eatPos);
                 }
             }
         }
     }
 
-    getMoveArr(movePos, lineInt, indexOfLine, i)
-    {
-        let moveArr = []
-        for (let j = 1; j < 8; j++)
-        {
-            let nextLine = lineInt + (movePos[i][0] * j);
-            let nextPos = indexOfLine + (movePos[i][1] * j);
-            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 8)
-            {
+    analyzeRookEat(pos) {
+        let movePos = [
+            [-1, 0],
+            [0, 1],
+            [-1, 0],
+            [0, -1],
+        ];
+        let className = "rook-" + this.queue.color;
+        const rooks = document.getElementsByClassName(className);
+        for (let rook of rooks) {
+            let rookPos = rook.attributes.id.value.split("-")[1];
+            let rookLine = this.getLine(rookPos);
+            let rookIndex = this.lines[rookLine].indexOf(parseInt(rookPos));
+            for (let i = 0; i < 4; i++) {
+                for (let j = 1; j < 8; j++) {
+                    let eatPos =
+                        this.lines[
+                            (parseInt(rookLine) + movePos[i][0] * j).toString()
+                        ][rookIndex + movePos[i][1] * j].toString();
+                    if (this.checkCellToEat(eatPos) && eatPos === pos) {
+                        this.setCellToEat(eatPos);
+                    }
+                }
+            }
+        }
+    }
+
+    analyzeKnightEat(pos) {
+        let movePos = [
+            [-2, -1],
+            [-2, 1],
+            [-1, 2],
+            [1, 2],
+            [2, 1],
+            [2, -1],
+            [1, -2],
+            [-1, -2],
+        ];
+        let className = "knight-" + this.queue.color;
+        const knights = document.getElementsByClassName(className);
+        for (let knight of knights) {
+            let knightPos = knight.attributes.id.value.split("-")[1];
+            let knightLine = this.getLine(knightPos);
+            let knightIndex = this.lines[knightLine].indexOf(
+                parseInt(knightPos)
+            );
+            for (let item of movePos) {
+                let eatPos =
+                    this.lines[(parseInt(knightLine) + item[0]).toString()][
+                        knightIndex + item[1]
+                    ].toString();
+                if (this.checkCellToEat(eatPos) && eatPos === pos) {
+                    this.setCellToEat(eatPos);
+                }
+            }
+        }
+    }
+
+    analyzeBishopEat(pos) {
+        let movePos = [
+            [-1, -1],
+            [-1, 1],
+            [1, 1],
+            [1, -1],
+        ];
+        let className = "bishop-" + this.queue.color;
+        const bishops = document.getElementsByClassName(className);
+        for (let bishop of bishops) {
+            let bishopPos = bishop.attributes.id.value.split("-")[1];
+            let bishopLine = this.getLine(bishopPos);
+            let bishopIndex = this.lines[bishopLine].indexOf(
+                parseInt(bishopPos)
+            );
+            for (let i = 0; i < 4; i++) {
+                for (let j = 1; j < 8; i++) {
+                    let eatPos =
+                        this.lines[
+                            (
+                                parseInt(bishopLine) +
+                                movePos[i][0] * j
+                            ).toString()
+                        ][bishopIndex + movePos[i][1] * j].toString();
+                    if (this.checkCellToEat(eatPos) && eatPos === pos) {
+                        this.setCellToEat(eatPos);
+                    }
+                }
+            }
+        }
+    }
+
+    analyzeQueenEat(pos) {
+        let movePos = [
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            [-1, 1],
+            [-1, 0],
+            [-1, -1],
+            [0, -1],
+            [1, 1],
+        ];
+        let className = "queen-" + this.queue.color;
+        const queens = document.getElementsByClassName(className);
+        for (let queen of queens) {
+            let queenPos = queen.attributes.id.value.split("-")[1];
+            let queenLine = this.getLine(queenPos);
+            let queenIndex = this.lines[queenLine].indexOf(parseInt(queenPos));
+            for (let i = 0; i < 8; i++) {
+                for (let j = 1; j < 8; i++) {
+                    let eatPos =
+                        this.lines[
+                            (parseInt(queenLine) + movePos[i][0] * j).toString()
+                        ][queenIndex + movePos[i][1] * j].toString();
+                    if (this.checkCellToEat(eatPos) && eatPos === pos) {
+                        this.setCellToEat(eatPos);
+                    }
+                }
+            }
+        }
+    }
+
+    analyzeKingEat(pos) {
+        let movePos = [
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            [-1, 1],
+            [-1, 0],
+            [-1, -1],
+            [0, -1],
+            [1, 1],
+        ];
+        let className = "king-" + this.queue.color;
+        const king = document.getElementsByClassName(className)[0];
+        let kingPos = king.attributes.id.value.split("-")[1];
+        let kingLine = this.getLine(kingPos);
+        let kingIndex = this.lines[kingLine].indexOf(parseInt(kingPos));
+        for (let item of movePos) {
+            eatPos =
+                this.lines[(parseInt(kingLine) + item[0]).toString()][
+                    kingIndex + item[1]
+                ].toString();
+            if (this.checkCellToEat(eatPos) && eatPos === pos) {
+                this.setCellToEat(eatPos);
+            }
+        }
+    }
+
+    getMoveArr(movePos, lineInt, indexOfLine, i) {
+        let moveArr = [];
+        for (let j = 1; j < 8; j++) {
+            let nextLine = lineInt + movePos[i][0] * j;
+            let nextPos = indexOfLine + movePos[i][1] * j;
+            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 8) {
                 let nextMove = this.lines[nextLine.toString()][nextPos];
                 moveArr.push(nextMove);
-                if (this.position[nextMove.toString()] !== null)
-                {
+                if (this.positions[nextMove.toString()] !== null) {
                     break;
                 }
             } else {
@@ -527,316 +809,138 @@ class Chess {
         let posInt = parseInt(pos);
         let condition = posInt / 8 > parseInt(posInt / 8);
         let line = null;
-        if (condition)
-        {
+        if (condition) {
             line = parseInt(posInt / 8) + 1;
-        } else
-        {
+        } else {
             line = parseInt(posInt / 8);
         }
         return line.toString();
     }
 
-    setCellToPossibleMove(pos)
-    {
-        let cell = document.getElementById(this.classes.cell+'-'+pos);
+    possibleChangeFigure() {}
+
+    isCheck() {}
+
+    isCheckMate() {}
+
+    setCellClass(pos, className) {
+        let cell = document.getElementById(pos);
+        cell.classList.remove(this.classes.cell);
+        cell.classList.add(className);
+        setTimeout(() => {
+            this.deleteCellClass(pos, className);
+        }, 1000);
+    }
+
+    deleteCellClass(pos, className) {
+        let cell = document.getElementById(pos);
+        cell.classList.remove(className);
+        cell.classList.add(this.classes.cell);
+    }
+
+    checkCellToPossibleMove(pos) {
+        let cell = document.getElementById("cell-" + pos).className;
+        if (cell === null) {
+            return false;
+        } else {
+            return (
+                cell.match(this.classes.cell) !== null &&
+                cell.match(this.queue.color) === null
+            );
+        }
+    }
+
+    checkCellToEat(pos) {
+        let cell = document.getElementById("cell-" + pos).className;
+        if (cell === null) {
+            return false;
+        } else {
+            return (
+                cell.match(this.classes.cell) !== null &&
+                cell.match(this.queueNegative) !== null
+            );
+        }
+    }
+
+    setCellToPossibleMove(pos) {
+        let cell = document.getElementById(this.classes.cell + "-" + pos);
         cell.classList.remove(this.classes.cell);
         cell.classList.add(this.classes.possibleMove);
     }
 
-    checkCellToPossibleMove(pos)
-    {
-        let cell = document.getElementById('cell-'+pos).className;
-        if (cell === null)
-        {
-            return false;
-        } else
-        {
-            return cell.match(this.classes.cell) !== null && cell.match(this.queue) === null;
-        }
-    }
-
-    checkCellToEat(pos)
-    {
-        let cell = document.getElementById('cell-'+pos).className;
-        if (cell === null)
-        {
-            return false;
-        } else
-        {
-            return cell.match(this.classes.cell) !== null && cell.match(this.queueNegative) !== null;
-        }
-    }
-
     setCellToEat(pos) {
-        let cell = document.getElementById(this.classes.cell+'-'+pos);
+        let cell = document.getElementById(this.classes.cell + "-" + pos);
         cell.classList.remove(this.classes.cell);
         cell.classList.add(this.classes.killMove);
     }
 
-    eatFigure(murder, meal) {
-        let mealId = meal.split("-")[1];
-        let historyResult = "[eat] " + murder + " -> " + meal;
-        this.history.push(historyResult);
-        this.pushHistory(historyResult);
-        let count = null;
-        if (this.queue === this.user.color)
-        {
-            count = this.user.kill;
-            this.user.kill += 1;
-        } else
-        {
-            count = this.bot.kill;
-            this.bot.kill += 1;
-        }
-        let cell = document.getElementById(this.queue+"-eat-"+(count+1).toString());
-        cell.classList.add(this.position[mealId]);
-    }
-
-    possibleChangeFigure(figure) {}
-
-    isCheck() {
-        if (this.queue === this.user.color) {
-            let king = document.getElementsByClassName('king-'+this.user.color);
-            if (king.className.match("kill-move") !== null) {
-                this.setPositionClass(king.item(0).attributes.id.value, 'check-move');
-            }
-        }
-    }
-
-    isCheckMate() {}
-}
-
-class EventListener
-{
-    constructor(chess)
-    {
-        this.game = chess;
-        this.queue = null;
-    }
-
-    activate()
-    {
-        document.querySelectorAll('.cell').forEach(item =>
-        {
-            item.addEventListener('click', () =>
-            {
-                this.queue = new HandlerUtil().whoQueue();
-                if (
-                    item.className.match(this.game.classes.cell) !== null &&
-                    item.className.match(this.queue) !== null
-                )
-                {
-                    new HandlerUtil().clearDecals();
-                    item.classList.remove(this.game.classes.cell);
-                    item.classList.add(this.game.classes.hold);
-                    this.game.possibleMove(item);
-                } else if (item.className.match(this.game.classes.possibleMove) !== null)
-                {
-                    let figure = document.querySelector("."+this.game.classes.hold);
-                    this.game.moveFigure(figure, figure.attributes.id.value, item.attributes.id.value);
-                } else if (item.className.match(this.game.classes.killMove) !== null) {
-                    let figure = document.querySelector("."+this.game.classes.hold);
-                    this.game.moveFigure(figure, figure.attributes.id.value, item.attributes.id.value);
-                }
-            });
-        });
+    pushHistory(content) {
+        let historyBlock = document.getElementById("history");
+        let newElement = document.createElement("p");
+        let newContent = document.createTextNode(content);
+        newElement.appendChild(newContent);
+        historyBlock.appendChild(newElement);
     }
 }
 
-class StartGame
-{
-    constructor(userColor)
-    {
-        this.user = {
-            color : userColor,
-            side : "bottom"
-        };
-        this.bot = {
-            color : userColor === "white" ? "black" : "white",
-            side : "top"
-        };
+
+class HandlerUtil {
+    constructor() {
+        this.chess = new Chess();
     }
 
-    activate()
-    {
-        let h1 = document.getElementById('data');
-        h1.setAttribute('aria-user', this.user.color);
-        h1.setAttribute('aria-bot', this.bot.color);
-        this.fillSide(this.user.side, this.user.color);
-        this.fillSide(this.bot.side, this.bot.color);
-    }
-
-    fillSide(side, color)
-    {
-        const sideColor = {
-            "black": {
-                pawn: "pawn-black",
-                rook: "rook-black",
-                knights: "knight-black",
-                bishop: "bishop-black",
-                queen: "queen-black",
-                king: "king-black"
-            },
-            "white": {
-                pawn: "pawn-white",
-                rook: "rook-white",
-                knights: "knight-white",
-                bishop: "bishop-white",
-                queen: "queen-white",
-                king: "king-white"
-            }
-        }
-
-        /* TOP */
-        // rook
-        let h1 = document.getElementById('cell-1');
-        let a1 = document.getElementById('cell-8');
-        // knights
-        let g1 = document.getElementById('cell-2');
-        let b1 = document.getElementById('cell-7');
-        // bishop
-        let f1 = document.getElementById('cell-3');
-        let c1 = document.getElementById('cell-6');
-        // queen
-        let e1 = document.getElementById('cell-4');
-        // king
-        let d1 = document.getElementById('cell-5');
-        /* END TOP */
-
-        const top = {
-            rook: [h1, a1],
-            knights: [g1, b1],
-            bishop: [f1, c1],
-            queen: e1,
-            king: d1
-        }
-
-        /* BOTTOM */
-        // rook
-        let h8 = document.getElementById('cell-57');
-        let a8 = document.getElementById('cell-64');
-        // knights
-        let g8 = document.getElementById('cell-58');
-        let b8 = document.getElementById('cell-63');
-        // bishop
-        let f8 = document.getElementById('cell-59');
-        let c8 = document.getElementById('cell-62');
-        // queen
-        let e8 = document.getElementById('cell-60');
-        // king
-        let d8 = document.getElementById('cell-61');
-        /* END BOTTOM*/
-
-        const bottom = {
-            rook: [h8, a8],
-            knights: [g8, b8],
-            bishop: [f8, c8],
-            queen: e8,
-            king: d8
-        }
-
-        switch (side)
-        {
-            case "top":
-                for (let item of top.rook)
-                {
-                    item.classList.add(sideColor[color].rook);
-                }
-                for (let item of top.knights)
-                {
-                    item.classList.add(sideColor[color].knights);
-                }
-                for (let item of top.bishop)
-                {
-                    item.classList.add(sideColor[color].bishop);
-                }
-                top.queen.classList.add(sideColor[color].queen);
-                top.king.classList.add(sideColor[color].king);
-                for (let i = 9; i < 17; i++)
-                {
-                    document.getElementById('cell-' + i.toString()).classList.add(sideColor[color].pawn);
-                }
-                break;
-            case "bottom":
-                for (let item of bottom.rook)
-                {
-                    item.classList.add(sideColor[color].rook);
-                }
-                for (let item of bottom.knights)
-                {
-                    item.classList.add(sideColor[color].knights);
-                }
-                for (let item of bottom.bishop)
-                {
-                    item.classList.add(sideColor[color].bishop);
-                }
-                bottom.queen.classList.add(sideColor[color].queen);
-                bottom.king.classList.add(sideColor[color].king);
-                for (let i = 49; i < 57; i++)
-                {
-                    document.getElementById('cell-' + i.toString()).classList.add(sideColor[color].pawn);
-                }
-                break;
-            default:
-                break;
+    whoQueue() {
+        return {
+            who: localStorage.getItem("currentMove"),
+            color: localStorage.getItem("moveColor")
         }
     }
-}
 
-class HandlerUtil
-{
-    constructor()
-    {
-    }
-
-    whoQueue()
-    {
-        return document.getElementById('data').attributes.getNamedItem('aria-move').value;
-    }
-
-    toggleQueue()
-    {
-        let color = document.getElementById('data').attributes.getNamedItem('aria-move').value;
-        switch (color)
-        {
-            case "white":
-                document.getElementById('data').attributes.getNamedItem('aria-move').value = 'black';
+    toggleQueue() {
+        let queue = this.whoQueue();
+        let userColor = localStorage.getItem("userColor");
+        let botColor = localStorage.getItem("botColor");
+        switch (queue.color) {
+            case userColor:
+                localStorage.setItem("currentMove", "bot");
+                localStorage.setItem("moveColor", botColor);
                 break;
-            case "black":
-                document.getElementById('data').attributes.getNamedItem('aria-move').value = 'white';
+            case botColor:
+                localStorage.setItem("currentMove", "user");
+                localStorage.setItem("moveColor", userColor);
                 break;
             default:
                 break;
         }
     }
 
-    parseColors()
-    {
-        let userColor = document.getElementById('data').attributes.getNamedItem('aria-user').value;
-        let botColor = document.getElementById('data').attributes.getNamedItem('aria-bot').value;
+    parseColors() {
+        let userColor = localStorage.getItem("userColor");
+        let botColor = localStorage.getItem("botColor");
         return {
             user: userColor,
-            bot: botColor
+            bot: botColor,
         };
     }
 
-    clearDecals()
-    {
-        document.querySelectorAll('.hold').forEach(item =>
-        {
-            item.classList.remove('hold');
-            item.classList.add('cell');
-        });
-        document.querySelectorAll('.possible-move').forEach(item =>
-        {
-            item.classList.remove('possible-move');
-            item.classList.add('cell');
-        });
-        document.querySelectorAll('.kill-move').forEach(item =>
-        {
-            item.classList.remove('kill-move');
-            item.classList.add('cell');
-        });
+    clearDecals() {
+        document
+            .querySelectorAll("." + this.chess.classes.hold)
+            .forEach((item) => {
+                item.classList.remove(this.chess.classes.hold);
+                item.classList.add(this.chess.classes.cell);
+            });
+        document
+            .querySelectorAll("." + this.chess.classes.possibleMove)
+            .forEach((item) => {
+                item.classList.remove(this.chess.classes.possibleMove);
+                item.classList.add(this.chess.classes.cell);
+            });
+        document
+            .querySelectorAll("." + this.chess.classes.killMove)
+            .forEach((item) => {
+                item.classList.remove(this.chess.classes.killMove);
+                item.classList.add(this.chess.classes.cell);
+            });
     }
 }
