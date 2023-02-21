@@ -1,65 +1,65 @@
 document.onreadystatechange = () => {
-    localStorage.setItem("startColor", "white");
+    localStorage.setItem("userColor", "white");
+    localStorage.setItem("botColor", "black");
+    localStorage.setItem("moveColor", "white");
+    localStorage.setItem("currentMove", "user");
     if (document.readyState === "complete") {
-        const startColor = localStorage.getItem("startColor");
-        new StartGame(startColor).activate();
+        const userColor = localStorage.getItem("userColor"),
+            botColor = localStorage.getItem("botColor");
+        new StartGame(userColor, botColor).activate();
         new EventListener().activate();
-        localStorage.removeItem("startColor");
     }
 };
 
 class EventListener {
     constructor() {
+        this.classes = new HandlerUtil().classes;
         this.game = new Chess();
         this.queue = null;
     }
 
     activate() {
-        document
-            .querySelectorAll("." + this.game.classes.cell)
-            .forEach((item) => {
-                item.addEventListener("click", () => {
-                    this.queue = localStorage.getItem("moveColor");
-                    if (
-                        item.className.match(this.game.classes.cell) !== null &&
-                        item.className.match(this.queue) !== null
-                    ) {
-                        new HandlerUtil().clearDecals();
-                        item.classList.remove(this.game.classes.cell);
-                        item.classList.add(this.game.classes.hold);
-                        this.game.setPossibleMove(item);
-                    } else if (
-                        item.className.match(this.game.classes.possibleMove) !==
-                        null
-                    ) {
-                        let figure = document.querySelector(
-                            "." + this.game.classes.hold
-                        );
-                        this.game.moveFigure(
-                            figure,
-                            figure.attributes.id.value,
-                            item.attributes.id.value
-                        );
-                    } else if (
-                        item.className.match(this.game.classes.killMove) !==
-                        null
-                    ) {
-                        let figure = document.querySelector(
-                            "." + this.game.classes.hold
-                        );
-                        this.game.moveFigure(
-                            figure,
-                            figure.attributes.id.value,
-                            item.attributes.id.value
-                        );
-                    }
-                });
+        document.querySelectorAll("." + this.classes.cell).forEach((item) => {
+            item.addEventListener("click", () => {
+                this.queue = new HandlerUtil().whoQueue();
+                if (
+                    item.className.match(this.classes.cell) !== null &&
+                    item.className.match(this.queue.color) !== null
+                ) {
+                    new HandlerUtil().clearDecals();
+                    item.classList.remove(this.classes.cell);
+                    item.classList.add(this.classes.hold);
+                    this.game.setPossibleMove(item);
+                } else if (
+                    item.className.match(this.classes.possibleMove) !== null
+                ) {
+                    let figure = document.querySelector(
+                        "." + this.classes.hold
+                    );
+                    this.game.moveFigure(
+                        figure,
+                        figure.attributes.id.value,
+                        item.attributes.id.value
+                    );
+                } else if (
+                    item.className.match(this.classes.killMove) !== null
+                ) {
+                    let figure = document.querySelector(
+                        "." + this.classes.hold
+                    );
+                    this.game.moveFigure(
+                        figure,
+                        figure.attributes.id.value,
+                        item.attributes.id.value
+                    );
+                }
             });
+        });
     }
 }
 
 class StartGame {
-    constructor(userColor) {
+    constructor(userColor, botColor) {
         this.user = {
             name: "user",
             color: userColor,
@@ -67,16 +67,12 @@ class StartGame {
         };
         this.bot = {
             name: "bot",
-            color: userColor === "white" ? "black" : "white",
+            color: botColor,
             side: "top",
         };
     }
 
     activate() {
-        localStorage.setItem("userColor", this.user.color);
-        localStorage.setItem("botColor", this.bot.color);
-        localStorage.setItem("moveColor", this.user.color);
-        localStorage.setItem("currentMove", this.user.name);
         this.fillSide(this.user.side, this.user.color);
         this.fillSide(this.bot.side, this.bot.color);
     }
@@ -102,91 +98,107 @@ class StartGame {
         };
 
         /* TOP */
-        // rook
-        let h1 = document.getElementById("cell-1");
-        let a1 = document.getElementById("cell-8");
+        // rooks
+        let h8 = document.getElementById("h8");
+        let a8 = document.getElementById("a8");
         // knights
-        let g1 = document.getElementById("cell-2");
-        let b1 = document.getElementById("cell-7");
-        // bishop
-        let f1 = document.getElementById("cell-3");
-        let c1 = document.getElementById("cell-6");
+        let g8 = document.getElementById("g8");
+        let b8 = document.getElementById("b8");
+        // bishops
+        let f8 = document.getElementById("f8");
+        let c8 = document.getElementById("c8");
         // queen
-        let e1 = document.getElementById("cell-4");
+        let e8 = document.getElementById("e8");
         // king
-        let d1 = document.getElementById("cell-5");
-        /* END TOP */
+        let d8 = document.getElementById("d8");
+        // pawns
+        let a7 = document.getElementById("a7");
+        let b7 = document.getElementById("b7");
+        let c7 = document.getElementById("c7");
+        let d7 = document.getElementById("d7");
+        let e7 = document.getElementById("e7");
+        let f7 = document.getElementById("f7");
+        let g7 = document.getElementById("g7");
+        let h7 = document.getElementById("h7");
+        /* END TOP*/
 
         /* BOTTOM */
-        // rook
-        let h8 = document.getElementById("cell-57");
-        let a8 = document.getElementById("cell-64");
-        // knights
-        let g8 = document.getElementById("cell-58");
-        let b8 = document.getElementById("cell-63");
-        // bishop
-        let f8 = document.getElementById("cell-59");
-        let c8 = document.getElementById("cell-62");
+        // rooks
+        let h1 = document.getElementById("h1");
+        let a1 = document.getElementById("a1");
+        // knights5
+        let g1 = document.getElementById("g1");
+        let b1 = document.getElementById("b1");
+        // bishops
+        let f1 = document.getElementById("f1");
+        let c1 = document.getElementById("c1");
         // queen
-        let e8 = document.getElementById("cell-60");
+        let e1 = document.getElementById("e1");
         // king
-        let d8 = document.getElementById("cell-61");
-        /* END BOTTOM*/
-
-        const top = {
-            name: "top",
-            rook: [h1, a1],
-            knights: [g1, b1],
-            bishop: [f1, c1],
-            queen: e1,
-            king: d1,
-        };
+        let d1 = document.getElementById("d1");
+        // pawns
+        let a2 = document.getElementById("a2");
+        let b2 = document.getElementById("b2");
+        let c2 = document.getElementById("c2");
+        let d2 = document.getElementById("d2");
+        let e2 = document.getElementById("e2");
+        let f2 = document.getElementById("f2");
+        let g2 = document.getElementById("g2");
+        let h2 = document.getElementById("h2");
+        /* END BOTTOM */
 
         const bottom = {
             name: "bottom",
-            rook: [h8, a8],
+            pawns: [a2, b2, c2, d2, e2, f2, g2, h2],
+            rooks: [h1, a1],
+            knights: [g1, b1],
+            bishops: [f1, c1],
+            queen: d1,
+            king: e1,
+        };
+
+        const top = {
+            name: "top",
+            pawns: [a7, b7, c7, d7, e7, f7, g7, h7],
+            rooks: [h8, a8],
             knights: [g8, b8],
-            bishop: [f8, c8],
-            queen: e8,
-            king: d8,
+            bishops: [f8, c8],
+            queen: d8,
+            king: e8,
         };
 
         switch (side) {
             case top.name:
-                for (let item of top.rook) {
+                for (let item of top.pawns) {
+                    item.classList.add(sideColor[color].pawn);
+                }
+                for (let item of top.rooks) {
                     item.classList.add(sideColor[color].rook);
                 }
                 for (let item of top.knights) {
                     item.classList.add(sideColor[color].knights);
                 }
-                for (let item of top.bishop) {
+                for (let item of top.bishops) {
                     item.classList.add(sideColor[color].bishop);
                 }
                 top.queen.classList.add(sideColor[color].queen);
                 top.king.classList.add(sideColor[color].king);
-                for (let i = 9; i < 17; i++) {
-                    document
-                        .getElementById("cell-" + i.toString())
-                        .classList.add(sideColor[color].pawn);
-                }
                 break;
             case bottom.name:
-                for (let item of bottom.rook) {
+                for (let item of bottom.pawns) {
+                    item.classList.add(sideColor[color].pawn);
+                }
+                for (let item of bottom.rooks) {
                     item.classList.add(sideColor[color].rook);
                 }
                 for (let item of bottom.knights) {
                     item.classList.add(sideColor[color].knights);
                 }
-                for (let item of bottom.bishop) {
+                for (let item of bottom.bishops) {
                     item.classList.add(sideColor[color].bishop);
                 }
                 bottom.queen.classList.add(sideColor[color].queen);
                 bottom.king.classList.add(sideColor[color].king);
-                for (let i = 49; i < 57; i++) {
-                    document
-                        .getElementById("cell-" + i.toString())
-                        .classList.add(sideColor[color].pawn);
-                }
                 break;
             default:
                 break;
@@ -201,85 +213,82 @@ class Chess {
         this.queue = undefined;
         this.check = false;
         this.checkMate = false;
-        this.colors = {
-            user: localStorage.getItem("userColor"),
-            bot: localStorage.getItem("botColor")
-        }
+        this.colors = new HandlerUtil().parseColors();
         this.lines = {
-            1: [1, 2, 3, 4, 5, 6, 7, 8],
-            2: [9, 10, 11, 12, 13, 14, 15, 16],
-            3: [17, 18, 19, 20, 21, 22, 23, 24],
-            4: [25, 26, 27, 28, 29, 30, 31, 32],
-            5: [33, 34, 35, 36, 37, 38, 39, 40],
-            6: [41, 42, 43, 44, 45, 46, 47, 48],
-            7: [49, 50, 51, 52, 53, 54, 55, 56],
-            8: [57, 58, 59, 60, 61, 62, 63, 64],
+            1: ["a", "b", "c", "d", "e", "f", "g", "h"],
+            2: ["a", "b", "c", "d", "e", "f", "g", "h"],
+            3: ["a", "b", "c", "d", "e", "f", "g", "h"],
+            4: ["a", "b", "c", "d", "e", "f", "g", "h"],
+            5: ["a", "b", "c", "d", "e", "f", "g", "h"],
+            6: ["a", "b", "c", "d", "e", "f", "g", "h"],
+            7: ["a", "b", "c", "d", "e", "f", "g", "h"],
+            8: ["a", "b", "c", "d", "e", "f", "g", "h"],
         };
         this.positions = {
-            1: "rook-" + this.colors.bot,
-            2: "knight-" + this.colors.bot,
-            3: "bishop-" + this.colors.bot,
-            4: "queen-" + this.colors.bot,
-            5: "king-" + this.colors.bot,
-            6: "bishop-" + this.colors.bot,
-            7: "knight-" + this.colors.bot,
-            8: "rook-" + this.colors.bot,
-            9: "pawn-" + this.colors.bot,
-            10: "pawn-" + this.colors.bot,
-            11: "pawn-" + this.colors.bot,
-            12: "pawn-" + this.colors.bot,
-            13: "pawn-" + this.colors.bot,
-            14: "pawn-" + this.colors.bot,
-            15: "pawn-" + this.colors.bot,
-            16: "pawn-" + this.colors.bot,
-            17: null,
-            18: null,
-            19: null,
-            20: null,
-            21: null,
-            22: null,
-            23: null,
-            24: null,
-            25: null,
-            26: null,
-            27: null,
-            28: null,
-            29: null,
-            30: null,
-            31: null,
-            32: null,
-            33: null,
-            34: null,
-            35: null,
-            36: null,
-            37: null,
-            38: null,
-            39: null,
-            40: null,
-            41: null,
-            42: null,
-            43: null,
-            44: null,
-            45: null,
-            46: null,
-            47: null,
-            48: null,
-            49: "pawn-" + this.colors.user,
-            50: "pawn-" + this.colors.user,
-            51: "pawn-" + this.colors.user,
-            52: "pawn-" + this.colors.user,
-            53: "pawn-" + this.colors.user,
-            54: "pawn-" + this.colors.user,
-            55: "pawn-" + this.colors.user,
-            56: "pawn-" + this.colors.user,
-            57: "rook-" + this.colors.user,
-            58: "knight-" + this.colors.user,
-            59: "bishop-" + this.colors.user,
-            60: "queen-" + this.colors.user,
-            61: "king-" + this.colors.user,
-            62: "bishop-" + this.colors.user,
-            63: "knight-" + this.colors.user,
-            64: "rook-" + this.colors.user,
+            a8: "rook-" + this.colors.bot,
+            b8: "knight-" + this.colors.bot,
+            c8: "bishop-" + this.colors.bot,
+            d8: "queen-" + this.colors.bot,
+            e8: "king-" + this.colors.bot,
+            f8: "bishop-" + this.colors.bot,
+            g8: "knight-" + this.colors.bot,
+            h8: "rook-" + this.colors.bot,
+            a7: "pawn-" + this.colors.bot,
+            b7: "pawn-" + this.colors.bot,
+            c7: "pawn-" + this.colors.bot,
+            d7: "pawn-" + this.colors.bot,
+            e7: "pawn-" + this.colors.bot,
+            f7: "pawn-" + this.colors.bot,
+            g7: "pawn-" + this.colors.bot,
+            h7: "pawn-" + this.colors.bot,
+            a6: null,
+            b6: null,
+            c6: null,
+            d6: null,
+            e6: null,
+            f6: null,
+            g6: null,
+            h6: null,
+            a5: null,
+            b5: null,
+            c5: null,
+            d5: null,
+            e5: null,
+            f5: null,
+            g5: null,
+            h5: null,
+            a4: null,
+            b4: null,
+            c4: null,
+            d4: null,
+            e4: null,
+            f4: null,
+            g4: null,
+            h4: null,
+            a3: null,
+            b3: null,
+            c3: null,
+            d3: null,
+            e3: null,
+            f3: null,
+            g3: null,
+            h3: null,
+            a2: "pawn-" + this.colors.user,
+            b2: "pawn-" + this.colors.user,
+            c2: "pawn-" + this.colors.user,
+            d2: "pawn-" + this.colors.user,
+            e2: "pawn-" + this.colors.user,
+            f2: "pawn-" + this.colors.user,
+            g2: "pawn-" + this.colors.user,
+            h2: "pawn-" + this.colors.user,
+            a1: "rook-" + this.colors.user,
+            b1: "knight-" + this.colors.user,
+            c1: "bishop-" + this.colors.user,
+            d1: "queen-" + this.colors.user,
+            e1: "king-" + this.colors.user,
+            f1: "bishop-" + this.colors.user,
+            g1: "knight-" + this.colors.user,
+            h1: "rook-" + this.colors.user,
         };
         this.user = {
             name: "user",
@@ -293,15 +302,7 @@ class Chess {
             side: "top",
             kill: 0,
         };
-        this.classes = {
-            cell: "cell",
-            hold: "hold",
-            possibleMove: "possible-move",
-            wrongMove: "wrong-move",
-            killMove: "kill-move",
-            chekMove: "check-move",
-            checkMateMove: "checkmate-move",
-        };
+        this.classes = new HandlerUtil().classes;
         this.figures = {
             pawn: "pawn",
             rook: "rook",
@@ -313,11 +314,9 @@ class Chess {
     }
 
     moveFigure(figure, from, to) {
-        let cellTo = undefined;
         this.queue = new HandlerUtil().whoQueue();
-        let figureId = figure.attributes.id.value.split("-")[1];
-        let fromId = from.split("-")[1];
-        let toId = to.split("-")[1];
+        let cellTo = undefined;
+        let figureId = figure.attributes.id.value;
         let figureClassName = this.positions[figureId];
         let figureName = figureClassName.split("-")[0];
         let figureColor = figureClassName.split("-")[1];
@@ -327,13 +326,13 @@ class Chess {
             cellFrom.classList.remove(figureClassName);
             cellFrom.classList.remove(this.classes.hold);
             cellFrom.classList.add(this.classes.cell);
-            if (this.positions[toId] !== null) {
+            if (this.positions[to] !== null) {
                 this.eatFigure(from, to);
                 cellTo.classList.remove(this.positions[toId]);
             }
             cellTo.classList.add(figureClassName);
-            this.positions[toId] = this.positions[fromId];
-            this.positions[fromId] = null;
+            this.positions[to] = this.positions[from];
+            this.positions[from] = null;
             new HandlerUtil().toggleQueue();
             new HandlerUtil().clearDecals();
         } else {
@@ -354,29 +353,181 @@ class Chess {
 
     setPossibleMove(figure) {
         let tmp = undefined,
-            pos = figure.attributes.id.value.split("-")[1];
+            movePos = {
+                n: [],
+                s: [],
+                e: [],
+                w: [],
+                ne: [],
+                nw: [],
+                se: [],
+                sw: [],
+            },
+            eatPos = {
+                n: [],
+                s: [],
+                e: [],
+                w: [],
+                ne: [],
+                nw: [],
+                se: [],
+                sw: [],
+            },
+            pos = figure.attributes.id.value,
+            coordinate = this.getCoordinate(pos);
         this.queue = new HandlerUtil().whoQueue();
         tmp = this.positions[pos].split("-")[0];
-        console.log("Set Possible Move");
-        console.log(pos, this.queue, tmp);
         switch (tmp) {
             case this.figures.pawn:
-                this.analyzePawnMove(pos);
+                eatPos = {
+                    user: {
+                        n: [],
+                        s: [],
+                        e: [],
+                        w: [],
+                        ne: [[1,1]],
+                        nw: [[1,-1]],
+                        se: [],
+                        sw: [],
+                    },
+                    bot: {
+                        n: [],
+                        s: [],
+                        e: [],
+                        w: [],
+                        ne: [],
+                        nw: [],
+                        se: [[-1,1]],
+                        sw: [[-1,-1]],
+                    }
+                }
+                if (coordinate.row === "7" || coordinate.row === "2") {
+                    movePos = {
+                        user: {
+                            n: [
+                                [1, 0],
+                                [2, 0],
+                            ],
+                            s: [],
+                            e: [],
+                            w: [],
+                            ne: [],
+                            nw: [],
+                            se: [],
+                            sw: [],
+                        },
+                        bot: {
+                            n: [],
+                            s: [
+                                [-1, 0],
+                                [-2, 0],
+                            ],
+                            e: [],
+                            w: [],
+                            ne: [],
+                            nw: [],
+                            se: [],
+                            sw: [],
+                        },
+                    };
+                } else {
+                    movePos = {
+                        user: {
+                            n: [[1, 0]],
+                            s: [],
+                            e: [],
+                            w: [],
+                            ne: [],
+                            nw: [],
+                            se: [],
+                            sw: [],
+                        },
+                        bot: {
+                            n: [],
+                            s: [[-1, 0]],
+                            e: [],
+                            w: [],
+                            ne: [],
+                            nw: [],
+                            se: [],
+                            sw: [],
+                        },
+                    };
+                }
+                switch (this.queue.who) {
+                    case "user":
+                        this.analyzeMove(pos, movePos.user);
+                        this.analyzeEat(pos, eatPos.user)
+                        break;
+                    case "bot":
+                        this.analyzeMove(pos, movePos.bot);
+                        this.analyzeEat(pos, eatPos.bot)
+                        break;
+                    default:
+                        break;
+                }
                 break;
             case this.figures.rook:
-                this.analyzeRookMove(pos);
+                for (let i = 1; i < 8; i++) {
+                    movePos.n.push([i, 0]);
+                    movePos.s.push([-i, 0]);
+                    movePos.w.push([0, i]);
+                    movePos.e.push([0, -i]);
+                }
+                this.analyzeMove(pos, movePos);
+                this.analyzeEat(pos, movePos);
                 break;
             case this.figures.knight:
-                this.analyzeKnightMove(pos);
+                movePos = {
+                    n: [[-2, -1]],
+                    e: [[-2, 1]],
+                    s: [[-1, -2]],
+                    w: [[-1, 2]],
+                    ne: [[1, -2]],
+                    nw: [[1, 2]],
+                    se: [[2, -1]],
+                    sw: [[2, 1]],
+                };
+                this.analyzeMove(pos, movePos);
+                this.analyzeEat(pos, movePos);
                 break;
             case this.figures.bishop:
-                this.analyzeBishopMove(pos);
+                for (let i = 1; i < 8; i++) {
+                    movePos.ne.push([i, i]);
+                    movePos.se.push([-i, i]);
+                    movePos.sw.push([-i, -i]);
+                    movePos.nw.push([i, -i]);
+                }
+                this.analyzeMove(pos, movePos)
+                this.analyzeEat(pos, movePos);
                 break;
             case this.figures.queen:
-                this.analyzeQueenMove(pos);
+                for (let i = 1; i < 8; i++) {
+                    movePos.n.push([i, 0]);
+                    movePos.s.push([-i, 0]);
+                    movePos.e.push([0, i]);
+                    movePos.w.push([0, -i]);
+                    movePos.ne.push([i, i]);
+                    movePos.se.push([-i, i]);
+                    movePos.sw.push([-i, -i]);
+                    movePos.nw.push([i, -i]);
+                }
+                this.analyzeMove(pos, movePos);
+                this.analyzeEat(pos, movePos)
                 break;
             case this.figures.king:
-                this.analyzeKingMove(pos);
+                movePos = {
+                    e: [[0, 1]],
+                    w: [[0, -1]],
+                    ne: [[1, 1]],
+                    nw: [[1, -1]],
+                    n: [[1, 0]],
+                    se: [[-1, 1]],
+                    s: [[-1, 0]],
+                    sw: [[-1, -1]],
+                };
+                this.analyzeMove(pos, movePos);
+                this.analyzeEat(pos, movePos)
                 break;
             default:
                 break;
@@ -399,422 +550,39 @@ class Chess {
         cell.classList.add(this.position[mealId]);
     }
 
-    analyzePawnMove(pos) {
-        let firstPosition = null,
-            secondPosition = null,
-            nextPosition = null,
-            positionsMove = null,
-            k = null,
-            n = null;
-        let line = this.getLine(pos);
-        let lineInt = parseInt(line);
-        let posInt = parseInt(pos);
-        let indexOfLine = this.lines[line].indexOf(posInt);
-        switch (this.queue.color) {
-            case this.user.color:
-                k = -1;
-                n = -2;
-                break;
-            case this.bot.color:
-                k = 1;
-                n = 2;
-                break;
-            default:
-                break;
-        }
-        firstPosition =
-            this.lines[(lineInt + k).toString()][indexOfLine].toString();
-        secondPosition =
-            this.lines[(lineInt + n).toString()][indexOfLine].toString();
-        nextPosition =
-            this.lines[(lineInt + k).toString()][indexOfLine].toString();
-        positionsMove = [firstPosition, secondPosition];
-        if (lineInt === 7 && this.queue.color === this.user.color || lineInt === 2 && this.queue.color === this.bot.color) {
-            if (this.positions[firstPosition] === null) {
-                for (let item of positionsMove) {
-                    if (this.checkCellToPossibleMove(item)) {
-                        console.log("Set Cell To Possible Move");
-                        this.setCellToPossibleMove(item);
-                    }
-                }
-            }
-        } else if (lineInt < 7 && lineInt > 1 && this.queue.color === this.user.color || lineInt > 2 && lineInt < 8 && this.queue.color === this.bot.color) {
-            if (this.positions[nextPosition] === null) {
-                this.setCellToPossibleMove(nextPosition);
-            }
-        }
+    analyzeMove(pos, movePos) {
+        let nextPosition = undefined,
+            coordinate = this.getCoordinate(pos),
+            indexOfLine = this.lines[coordinate.row].indexOf(coordinate.column);
+        movePos.n.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToPossibleMove(nextPosition)) {this.setCellToPossibleMove(nextPosition);return true;} else {return false;}} else {return false;}});
+        movePos.s.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToPossibleMove(nextPosition)) {this.setCellToPossibleMove(nextPosition);return true;} else {return false;}} else {return false;}});
+        movePos.e.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToPossibleMove(nextPosition)) {this.setCellToPossibleMove(nextPosition);return true;} else {return false;}} else {return false;}});
+        movePos.w.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToPossibleMove(nextPosition)) {this.setCellToPossibleMove(nextPosition);return true;} else {return false;}} else {return false;}});
+        movePos.ne.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToPossibleMove(nextPosition)) {this.setCellToPossibleMove(nextPosition);return true;} else {return false;}} else {return false;}});
+        movePos.nw.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToPossibleMove(nextPosition)) {this.setCellToPossibleMove(nextPosition);return true;} else {return false;}} else {return false;}});
+        movePos.se.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToPossibleMove(nextPosition)) {this.setCellToPossibleMove(nextPosition);return true;} else {return false;}} else {return false;}});
+        movePos.sw.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToPossibleMove(nextPosition)) {this.setCellToPossibleMove(nextPosition);return true;} else {return false;}} else {return false;}});
     }
 
-    analyzeRookMove(pos) {
-        const lines = [1,2,3,4,5,6,7,8];
-        let posInt = parseInt(pos);
-        let line = this.getLine(pos);
-        let lineInt = parseInt(line);
-        let indexOfLine = this.lines[line].indexOf(posInt);
-        let lineArr = this.lines[line];
-        let upMove = lines.slice(0, lineInt-1);
-        let downMove = lines.slice(lineInt-1);
-        let leftMove = lineArr.slice(0, breakpoint).reverse();
-        let rightMove = lineArr.slice(breakpoint + 1);
-        for (let item of upMove) {
-            let nextPosition = this.lines[item.toString()][indexOfLine].toString();
-            if (this.checkCellToPossibleMove(nextPosition)) {
-                this.setCellToPossibleMove(nextPosition);
-            } else {
-                break;
-            }
-        }
-        for (let item of downMove) {
-            let nextPosition = this.lines[item.toString()][indexOfLine].toString();
-            if (this.checkCellToPossibleMove(nextPosition)) {
-                this.setCellToPossibleMove(nextPosition);
-            } else {
-                break;
-            }
-        }
-        for (let item of leftMove) {
-            if (this.checkCellToPossibleMove(item.toString())) {
-                this.setCellToPossibleMove(item.toString());
-            } else {
-                break;
-            }
-        }
-        for (let item of rightMove) {
-            if (this.checkCellToPossibleMove(item.toString())) {
-                this.setCellToPossibleMove(item.toString());
-            } else {
-                break;
-            }
-        }
+    analyzeEat(pos, eatPos) {
+        let coordinate = this.getCoordinate(pos),
+            nextPosition = undefined,
+            indexOfLine = this.lines[coordinate.row].indexOf(coordinate.column);
+        eatPos.n.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToEat(nextPosition)) {this.setCellToEat(nextPosition);return true;} else {return false;}} else {return false;}});
+        eatPos.e.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToEat(nextPosition)) {this.setCellToEat(nextPosition);return true;} else {return false;}} else {return false;}});
+        eatPos.w.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToEat(nextPosition)) {this.setCellToEat(nextPosition);return true;} else {return false;}} else {return false;}});
+        eatPos.s.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToEat(nextPosition)) {this.setCellToEat(nextPosition);return true;} else {return false;}} else {return false;}});
+        eatPos.ne.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToEat(nextPosition)) {this.setCellToEat(nextPosition);return true;} else {return false;}} else {return false;}});
+        eatPos.nw.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToEat(nextPosition)) {this.setCellToEat(nextPosition);return true;} else {return false;}} else {return false;}});
+        eatPos.se.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToEat(nextPosition)) {this.setCellToEat(nextPosition);return true;} else {return false;}} else {return false;}});
+        eatPos.sw.every((item) => {if (item !== undefined) {nextPosition=this.lines[coordinate.row][indexOfLine+item[1]]+(parseInt(coordinate.row) + item[0]).toString();if (this.checkCellToEat(nextPosition)) {this.setCellToEat(nextPosition);return true;} else {return false;}} else {return false;}});
     }
 
-    analyzeKnightMove(pos) {
-        let movePos = [
-                [-2, -1],
-                [-2, 1],
-                [-1, -2],
-                [-1, 2],
-                [1, -2],
-                [1, 2],
-                [2, -1],
-                [2, 1],
-            ],
-            moveArr = [];
-        let posInt = parseInt(pos);
-        let line = this.getLine(pos);
-        let lineInt = parseInt(line);
-        let indexOfLine = this.lines[line].indexOf(posInt);
-        for (let i = 0; i < 8; i++) {
-            let nextLine = lineInt + movePos[i][0];
-            let nextPos = indexOfLine + movePos[i][1];
-            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 8) {
-                let nextPosition = this.lines[nextLine.toString()][nextPos];
-                moveArr.push(nextPosition.toString());
-            } else {
-                moveArr.push(0);
-            }
-        }
-        for (let item of moveArr) {
-            if (parseInt(item) > 0 && this.checkCellToPossibleMove(item)) {
-                this.setCellToPossibleMove(item);
-            }
-        }
-    }
-
-    analyzeBishopMove(pos) {
-        let posInt = parseInt(pos);
-        let movePos = [
-            [-1, -1],
-            [-1, 1],
-            [1, -1],
-            [1, 1],
-        ];
-        let moveArr = [[], [], [], []];
-        let line = this.getLine(pos);
-        let lineInt = parseInt(line);
-        let indexOfLine = this.lines[line].indexOf(posInt);
-        for (let i = 0; i < 4; i++) {
-            moveArr[i] = this.getMoveArr(movePos, lineInt, indexOfLine, i);
-        }
-        for (let arr of moveArr) {
-            for (let item of arr) {
-                if (item > 0 && this.checkCellToPossibleMove(item.toString())) {
-                    this.setCellToPossibleMove(item.toString());
-                }
-            }
-        }
-    }
-
-    analyzeQueenMove(pos) {
-        let posInt = parseInt(pos);
-        let movePos = [
-            [-1, 0],
-            [-1, 1],
-            [0, 1],
-            [1, 1],
-            [1, 0],
-            [1, -1],
-            [0, -1],
-            [-1, -1],
-        ];
-        let moveArr = [[], [], [], [], [], [], [], []];
-        let line = this.getLine(pos);
-        let lineInt = parseInt(line);
-        let indexOfLine = this.lines[line].indexOf(posInt);
-        for (let i = 0; i < 8; i++) {
-            moveArr[i] = this.getMoveArr(movePos, lineInt, indexOfLine, i);
-        }
-        for (let arr of moveArr) {
-            for (let item of arr) {
-                if (item > 0 && this.checkCellToPossibleMove(item.toString())) {
-                    this.setCellToPossibleMove(item.toString());
-                }
-            }
-        }
-    }
-
-    analyzeKingMove(pos) {
-        let posInt = parseInt(pos);
-        let movePos = [
-            [-1, 0],
-            [-1, 1],
-            [0, 1],
-            [1, 1],
-            [1, 0],
-            [1, -1],
-            [0, -1],
-            [-1, -1],
-        ];
-        let moveArr = [];
-        let line = this.getLine(pos);
-        let lineInt = parseInt(line);
-        let indexOfLine = this.lines[line].indexOf(posInt);
-        for (let i = 0; i < 8; i++) {
-            let nextLine = lineInt + movePos[i][0];
-            let nextPos = indexOfLine + movePos[i][1];
-            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 9) {
-                moveArr.push(this.lines[nextLine.toString()][nextPos]);
-            } else {
-                moveArr.push(0);
-            }
-        }
-        for (let item of moveArr) {
-            if (item > 0 && this.checkCellToPossibleMove(item.toString())) {
-                this.setCellToPossibleMove(item.toString());
-            }
-        }
-    }
-
-    analyzePawnEat(pos) {
-        let movePos = null;
-        switch (this.queue.color) {
-            case this.user.color:
-                movePos = [
-                    [-1, -1],
-                    [-1, 1],
-                ];
-            case this.bot.color:
-                movePos = [
-                    [1, -1],
-                    [1, 1],
-                ];
-            default:
-                break;
-        }
-        let className = "pawn-" + this.queue.color;
-        const pawns = document.getElementsByClassName(className);
-        for (let pawn of pawns) {
-            let pawnPos = pawn.attributes.id.value.split("-")[1];
-            let pawnLine = this.getLine(pawnPos);
-            let pawnIndex = this.lines[pawnLine].indexOf(parseInt(pawnPos));
-            for (let item of movePos) {
-                posEat =
-                    this.lines[(parseInt(pawnLine) + item[0]).toString()][
-                        pawnIndex + item[1]
-                    ].toString();
-                if (this.checkCellToEat(posEat) && posEat === pos) {
-                    this.setCellToEat(eatPos);
-                }
-            }
-        }
-    }
-
-    analyzeRookEat(pos) {
-        let movePos = [
-            [-1, 0],
-            [0, 1],
-            [-1, 0],
-            [0, -1],
-        ];
-        let className = "rook-" + this.queue.color;
-        const rooks = document.getElementsByClassName(className);
-        for (let rook of rooks) {
-            let rookPos = rook.attributes.id.value.split("-")[1];
-            let rookLine = this.getLine(rookPos);
-            let rookIndex = this.lines[rookLine].indexOf(parseInt(rookPos));
-            for (let i = 0; i < 4; i++) {
-                for (let j = 1; j < 8; j++) {
-                    let eatPos =
-                        this.lines[
-                            (parseInt(rookLine) + movePos[i][0] * j).toString()
-                        ][rookIndex + movePos[i][1] * j].toString();
-                    if (this.checkCellToEat(eatPos) && eatPos === pos) {
-                        this.setCellToEat(eatPos);
-                    }
-                }
-            }
-        }
-    }
-
-    analyzeKnightEat(pos) {
-        let movePos = [
-            [-2, -1],
-            [-2, 1],
-            [-1, 2],
-            [1, 2],
-            [2, 1],
-            [2, -1],
-            [1, -2],
-            [-1, -2],
-        ];
-        let className = "knight-" + this.queue.color;
-        const knights = document.getElementsByClassName(className);
-        for (let knight of knights) {
-            let knightPos = knight.attributes.id.value.split("-")[1];
-            let knightLine = this.getLine(knightPos);
-            let knightIndex = this.lines[knightLine].indexOf(
-                parseInt(knightPos)
-            );
-            for (let item of movePos) {
-                let eatPos =
-                    this.lines[(parseInt(knightLine) + item[0]).toString()][
-                        knightIndex + item[1]
-                    ].toString();
-                if (this.checkCellToEat(eatPos) && eatPos === pos) {
-                    this.setCellToEat(eatPos);
-                }
-            }
-        }
-    }
-
-    analyzeBishopEat(pos) {
-        let movePos = [
-            [-1, -1],
-            [-1, 1],
-            [1, 1],
-            [1, -1],
-        ];
-        let className = "bishop-" + this.queue.color;
-        const bishops = document.getElementsByClassName(className);
-        for (let bishop of bishops) {
-            let bishopPos = bishop.attributes.id.value.split("-")[1];
-            let bishopLine = this.getLine(bishopPos);
-            let bishopIndex = this.lines[bishopLine].indexOf(
-                parseInt(bishopPos)
-            );
-            for (let i = 0; i < 4; i++) {
-                for (let j = 1; j < 8; i++) {
-                    let eatPos =
-                        this.lines[
-                            (
-                                parseInt(bishopLine) +
-                                movePos[i][0] * j
-                            ).toString()
-                        ][bishopIndex + movePos[i][1] * j].toString();
-                    if (this.checkCellToEat(eatPos) && eatPos === pos) {
-                        this.setCellToEat(eatPos);
-                    }
-                }
-            }
-        }
-    }
-
-    analyzeQueenEat(pos) {
-        let movePos = [
-            [1, 0],
-            [1, 1],
-            [0, 1],
-            [-1, 1],
-            [-1, 0],
-            [-1, -1],
-            [0, -1],
-            [1, 1],
-        ];
-        let className = "queen-" + this.queue.color;
-        const queens = document.getElementsByClassName(className);
-        for (let queen of queens) {
-            let queenPos = queen.attributes.id.value.split("-")[1];
-            let queenLine = this.getLine(queenPos);
-            let queenIndex = this.lines[queenLine].indexOf(parseInt(queenPos));
-            for (let i = 0; i < 8; i++) {
-                for (let j = 1; j < 8; i++) {
-                    let eatPos =
-                        this.lines[
-                            (parseInt(queenLine) + movePos[i][0] * j).toString()
-                        ][queenIndex + movePos[i][1] * j].toString();
-                    if (this.checkCellToEat(eatPos) && eatPos === pos) {
-                        this.setCellToEat(eatPos);
-                    }
-                }
-            }
-        }
-    }
-
-    analyzeKingEat(pos) {
-        let movePos = [
-            [1, 0],
-            [1, 1],
-            [0, 1],
-            [-1, 1],
-            [-1, 0],
-            [-1, -1],
-            [0, -1],
-            [1, 1],
-        ];
-        let className = "king-" + this.queue.color;
-        const king = document.getElementsByClassName(className)[0];
-        let kingPos = king.attributes.id.value.split("-")[1];
-        let kingLine = this.getLine(kingPos);
-        let kingIndex = this.lines[kingLine].indexOf(parseInt(kingPos));
-        for (let item of movePos) {
-            eatPos =
-                this.lines[(parseInt(kingLine) + item[0]).toString()][
-                    kingIndex + item[1]
-                ].toString();
-            if (this.checkCellToEat(eatPos) && eatPos === pos) {
-                this.setCellToEat(eatPos);
-            }
-        }
-    }
-
-    getMoveArr(movePos, lineInt, indexOfLine, i) {
-        let moveArr = [];
-        for (let j = 1; j < 8; j++) {
-            let nextLine = lineInt + movePos[i][0] * j;
-            let nextPos = indexOfLine + movePos[i][1] * j;
-            if (nextLine > 0 && nextLine < 9 && nextPos > -1 && nextPos < 8) {
-                let nextMove = this.lines[nextLine.toString()][nextPos];
-                moveArr.push(nextMove);
-                if (this.positions[nextMove.toString()] !== null) {
-                    break;
-                }
-            } else {
-                moveArr.push(0);
-            }
-        }
-        return moveArr;
-    }
-
-    getLine(pos) {
-        let posInt = parseInt(pos);
-        let condition = posInt / 8 > parseInt(posInt / 8);
-        let line = null;
-        if (condition) {
-            line = parseInt(posInt / 8) + 1;
-        } else {
-            line = parseInt(posInt / 8);
-        }
-        return line.toString();
+    getCoordinate(pos) {
+        return {
+            row: pos.slice(1, 2),
+            column: pos.slice(0, 1),
+        };
     }
 
     possibleChangeFigure() {}
@@ -827,9 +595,6 @@ class Chess {
         let cell = document.getElementById(pos);
         cell.classList.remove(this.classes.cell);
         cell.classList.add(className);
-        setTimeout(() => {
-            this.deleteCellClass(pos, className);
-        }, 1000);
     }
 
     deleteCellClass(pos, className) {
@@ -839,39 +604,33 @@ class Chess {
     }
 
     checkCellToPossibleMove(pos) {
-        let cell = document.getElementById("cell-" + pos).className;
+        let cell = this.positions[pos];
         if (cell === null) {
-            return false;
+            return true;
         } else {
-            return (
-                cell.match(this.classes.cell) !== null &&
-                cell.match(this.queue.color) === null
-            );
+            return false;
         }
     }
 
     checkCellToEat(pos) {
-        let cell = document.getElementById("cell-" + pos).className;
-        if (cell === null) {
+        let cell = this.positions[pos],
+            color = undefined;
+        if (cell === null || cell === undefined) {
             return false;
         } else {
-            return (
-                cell.match(this.classes.cell) !== null &&
-                cell.match(this.queueNegative) !== null
-            );
+            color = cell.split("-")[1];
+            return color === this.queue.opposite;
         }
     }
 
     setCellToPossibleMove(pos) {
-        let cell = document.getElementById(this.classes.cell + "-" + pos);
-        cell.classList.remove(this.classes.cell);
-        cell.classList.add(this.classes.possibleMove);
+        //document.getElementById(pos).classList.remove(this.classes.cell);
+        document.getElementById(pos).classList.add(this.classes.possibleMove);
     }
 
     setCellToEat(pos) {
-        let cell = document.getElementById(this.classes.cell + "-" + pos);
-        cell.classList.remove(this.classes.cell);
-        cell.classList.add(this.classes.killMove);
+        //document.getElementById(pos).classList.remove(this.classes.cell);
+        document.getElementById(pos).classList.add(this.classes.killMove);
     }
 
     pushHistory(content) {
@@ -883,17 +642,25 @@ class Chess {
     }
 }
 
-
 class HandlerUtil {
     constructor() {
-        this.chess = new Chess();
+        this.classes = {
+            cell: "cell",
+            hold: "hold",
+            possibleMove: "possible-move",
+            wrongMove: "wrong-move",
+            killMove: "kill-move",
+            chekMove: "check-move",
+            checkMateMove: "checkmate-move",
+        };
     }
 
     whoQueue() {
         return {
             who: localStorage.getItem("currentMove"),
-            color: localStorage.getItem("moveColor")
-        }
+            color: localStorage.getItem("moveColor"),
+            opposite: localStorage.getItem("oppositeColor"),
+        };
     }
 
     toggleQueue() {
@@ -903,10 +670,12 @@ class HandlerUtil {
         switch (queue.color) {
             case userColor:
                 localStorage.setItem("currentMove", "bot");
+                localStorage.setItem("oppositeColor", userColor);
                 localStorage.setItem("moveColor", botColor);
                 break;
             case botColor:
                 localStorage.setItem("currentMove", "user");
+                localStorage.setItem("oppositeColor", botColor);
                 localStorage.setItem("moveColor", userColor);
                 break;
             default:
@@ -924,23 +693,21 @@ class HandlerUtil {
     }
 
     clearDecals() {
+        document.querySelectorAll("." + this.classes.hold).forEach((item) => {
+            item.classList.remove(this.classes.hold);
+            item.classList.add(this.classes.cell);
+        });
         document
-            .querySelectorAll("." + this.chess.classes.hold)
+            .querySelectorAll("." + this.classes.possibleMove)
             .forEach((item) => {
-                item.classList.remove(this.chess.classes.hold);
-                item.classList.add(this.chess.classes.cell);
+                item.classList.remove(this.classes.possibleMove);
+                item.classList.add(this.classes.cell);
             });
         document
-            .querySelectorAll("." + this.chess.classes.possibleMove)
+            .querySelectorAll("." + this.classes.killMove)
             .forEach((item) => {
-                item.classList.remove(this.chess.classes.possibleMove);
-                item.classList.add(this.chess.classes.cell);
-            });
-        document
-            .querySelectorAll("." + this.chess.classes.killMove)
-            .forEach((item) => {
-                item.classList.remove(this.chess.classes.killMove);
-                item.classList.add(this.chess.classes.cell);
+                item.classList.remove(this.classes.killMove);
+                item.classList.add(this.classes.cell);
             });
     }
 }

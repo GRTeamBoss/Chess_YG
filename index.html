@@ -12,6 +12,7 @@
 <body>
     <h1>Chess</h1>
     <div class="background">
+        <div class="history" id="history"></div>
         <div class="black-kill">
             <div class="eat" id="black-eat-1"></div>
             <div class="eat" id="black-eat-2"></div>
@@ -28,88 +29,87 @@
             <div class="eat" id="black-eat-13"></div>
             <div class="eat" id="black-eat-14"></div>
             <div class="eat" id="black-eat-15"></div>
-            <div class="eat" id="black-eat-16"></div>
         </div>
         <div class="board">
             <div class="line-odd">
-                <div class="cell" id="cell-1"></div>
-                <div class="cell" id="cell-2"></div>
-                <div class="cell" id="cell-3"></div>
-                <div class="cell" id="cell-4"></div>
-                <div class="cell" id="cell-5"></div>
-                <div class="cell" id="cell-6"></div>
-                <div class="cell" id="cell-7"></div>
-                <div class="cell" id="cell-8"></div>
+                <div class="cell" id="a8"></div>
+                <div class="cell" id="b8"></div>
+                <div class="cell" id="c8"></div>
+                <div class="cell" id="d8"></div>
+                <div class="cell" id="e8"></div>
+                <div class="cell" id="f8"></div>
+                <div class="cell" id="g8"></div>
+                <div class="cell" id="h8"></div>
             </div>
             <div class="line-even">
-                <div class="cell" id="cell-9"></div>
-                <div class="cell" id="cell-10"></div>
-                <div class="cell" id="cell-11"></div>
-                <div class="cell" id="cell-12"></div>
-                <div class="cell" id="cell-13"></div>
-                <div class="cell" id="cell-14"></div>
-                <div class="cell" id="cell-15"></div>
-                <div class="cell" id="cell-16"></div>
+                <div class="cell" id="a7"></div>
+                <div class="cell" id="b7"></div>
+                <div class="cell" id="c7"></div>
+                <div class="cell" id="d7"></div>
+                <div class="cell" id="e7"></div>
+                <div class="cell" id="f7"></div>
+                <div class="cell" id="g7"></div>
+                <div class="cell" id="h7"></div>
             </div>
             <div class="line-odd">
-                <div class="cell" id="cell-17"></div>
-                <div class="cell" id="cell-18"></div>
-                <div class="cell" id="cell-19"></div>
-                <div class="cell" id="cell-20"></div>
-                <div class="cell" id="cell-21"></div>
-                <div class="cell" id="cell-22"></div>
-                <div class="cell" id="cell-23"></div>
-                <div class="cell" id="cell-24"></div>
+                <div class="cell" id="a6"></div>
+                <div class="cell" id="b6"></div>
+                <div class="cell" id="c6"></div>
+                <div class="cell" id="d6"></div>
+                <div class="cell" id="e6"></div>
+                <div class="cell" id="f6"></div>
+                <div class="cell" id="g6"></div>
+                <div class="cell" id="h6"></div>
             </div>
             <div class="line-even">
-                <div class="cell" id="cell-25"></div>
-                <div class="cell" id="cell-26"></div>
-                <div class="cell" id="cell-27"></div>
-                <div class="cell" id="cell-28"></div>
-                <div class="cell" id="cell-29"></div>
-                <div class="cell" id="cell-30"></div>
-                <div class="cell" id="cell-31"></div>
-                <div class="cell" id="cell-32"></div>
+                <div class="cell" id="a5"></div>
+                <div class="cell" id="b5"></div>
+                <div class="cell" id="c5"></div>
+                <div class="cell" id="d5"></div>
+                <div class="cell" id="e5"></div>
+                <div class="cell" id="f5"></div>
+                <div class="cell" id="g5"></div>
+                <div class="cell" id="h5"></div>
             </div>
             <div class="line-odd">
-                <div class="cell" id="cell-33"></div>
-                <div class="cell" id="cell-34"></div>
-                <div class="cell" id="cell-35"></div>
-                <div class="cell" id="cell-36"></div>
-                <div class="cell" id="cell-37"></div>
-                <div class="cell" id="cell-38"></div>
-                <div class="cell" id="cell-39"></div>
-                <div class="cell" id="cell-40"></div>
+                <div class="cell" id="a4"></div>
+                <div class="cell" id="b4"></div>
+                <div class="cell" id="c4"></div>
+                <div class="cell" id="d4"></div>
+                <div class="cell" id="e4"></div>
+                <div class="cell" id="f4"></div>
+                <div class="cell" id="g4"></div>
+                <div class="cell" id="h4"></div>
             </div>
             <div class="line-even">
-                <div class="cell" id="cell-41"></div>
-                <div class="cell" id="cell-42"></div>
-                <div class="cell" id="cell-43"></div>
-                <div class="cell" id="cell-44"></div>
-                <div class="cell" id="cell-45"></div>
-                <div class="cell" id="cell-46"></div>
-                <div class="cell" id="cell-47"></div>
-                <div class="cell" id="cell-48"></div>
+                <div class="cell" id="a3"></div>
+                <div class="cell" id="b3"></div>
+                <div class="cell" id="c3"></div>
+                <div class="cell" id="d3"></div>
+                <div class="cell" id="e3"></div>
+                <div class="cell" id="f3"></div>
+                <div class="cell" id="g3"></div>
+                <div class="cell" id="h3"></div>
             </div>
             <div class="line-odd">
-                <div class="cell" id="cell-49"></div>
-                <div class="cell" id="cell-50"></div>
-                <div class="cell" id="cell-51"></div>
-                <div class="cell" id="cell-52"></div>
-                <div class="cell" id="cell-53"></div>
-                <div class="cell" id="cell-54"></div>
-                <div class="cell" id="cell-55"></div>
-                <div class="cell" id="cell-56"></div>
+                <div class="cell" id="a2"></div>
+                <div class="cell" id="b2"></div>
+                <div class="cell" id="c2"></div>
+                <div class="cell" id="d2"></div>
+                <div class="cell" id="e2"></div>
+                <div class="cell" id="f2"></div>
+                <div class="cell" id="g2"></div>
+                <div class="cell" id="h2"></div>
             </div>
             <div class="line-even">
-                <div class="cell" id="cell-57"></div>
-                <div class="cell" id="cell-58"></div>
-                <div class="cell" id="cell-59"></div>
-                <div class="cell" id="cell-60"></div>
-                <div class="cell" id="cell-61"></div>
-                <div class="cell" id="cell-62"></div>
-                <div class="cell" id="cell-63"></div>
-                <div class="cell" id="cell-64"></div>
+                <div class="cell" id="a1"></div>
+                <div class="cell" id="b1"></div>
+                <div class="cell" id="c1"></div>
+                <div class="cell" id="d1"></div>
+                <div class="cell" id="e1"></div>
+                <div class="cell" id="f1"></div>
+                <div class="cell" id="g1"></div>
+                <div class="cell" id="h1"></div>
             </div>
         </div>
         <div class="white-kill">
@@ -128,9 +128,7 @@
             <div class="eat" id="white-eat-13"></div>
             <div class="eat" id="white-eat-14"></div>
             <div class="eat" id="white-eat-15"></div>
-            <div class="eat" id="white-eat-16"></div>
         </div>
     </div>
-    <div class="history" id="history"></div>
 </body>
 </html>

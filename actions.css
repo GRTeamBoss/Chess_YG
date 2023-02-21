@@ -1,47 +1,40 @@
 .hold {
-    display: block;
     width: 4rem;
     height: 4rem;
-    background-color: green;
+    background-color: yellow;
 }
 
-.possible-move {
-    display: block;
+.possible-move{
+    border: solid .1rem white;
     width: 4rem;
     height: 4rem;
-    background-color: rgba(10, 10, 255, .6);
-    box-shadow: 0 0 .2rem .2rem lawngreen;
+    background-image: radial-gradient(circle, gray 0%, gray 29%, transparent 30%, transparent 100%);
 }
 
-.kill-move {
-    display: block;
+.kill-move{
+    border: solid .1rem white;
     width: 4rem;
     height: 4rem;
-    background-color: rgba(255, 10, 10, .6);
-    box-shadow: 0 0 .2rem .2rem red;
+    border: solid .2rem red;
 }
 
-.possible-move:hover,
-.kill-move:hover{
-    transform: scale(1.1);
+.possible-move:hover{
+    background-image: radial-gradient(circle, gray 0%, gray 39%, transparent 40%, transparent 100%);
 }
 
 .wrong-move {
-    display: block;
     width: 4rem;
     height: 4rem;
     background-color: indianred;
 }
 
 .check-move {
-    display: block;
     width: 4rem;
     height: 4rem;
     background-color: orangered;
 }
 
 .checkmate-move {
-    display: block;
     width: 4rem;
     height: 4rem;
     background-color: darkred;

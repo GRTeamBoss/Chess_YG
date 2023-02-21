@@ -10,14 +10,16 @@ html {
 }
 
 .history {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
     position: relative;
-    width: 50rem;
-    height: 10rem;
-    overflow-x: hidden;
-    overflow-y: scroll;
+    width: 32rem;
+    height: 2rem;
+    overflow-x: scroll;
+    overflow-y: hidden;
     background-color: azure;
-    box-shadow: 0 0 .2rem .2rem black;
     color: darkslategrey;
     font-weight: lighter;
     margin-inline: auto;
@@ -27,9 +29,26 @@ html {
     border-bottom: solid .15rem;
 }
 
+.black-kill,
+.white-kill{
+    display: grid;
+    grid: 2rem / 2rem 2rem 2rem 2rem 2rem 2rem 2rem 2rem 2rem 2rem 2rem 2rem 2rem 2rem 2rem;
+    grid-column-gap: .14rem;
+    height: 2rem;
+    width: 32rem;
+    background-color: antiquewhite;
+}
+
+.eat {
+    display: block;
+    width: 2rem;
+    height: 2rem;
+    background-color: rgba(200, 200, 200, .6);
+}
+
 .background {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     background: gray;
     width: 50rem;
     height: 50rem;
@@ -38,41 +57,15 @@ html {
     margin-inline: auto;
 }
 
-.black-kill,
-.white-kill{
-    display: grid;
-    grid: 4rem 4rem 4rem 4rem 4rem 4rem 4rem 4rem / 4rem 4rem;
-    width: 8rem;
-    height: 32rem;
-    background-color: antiquewhite;
-    margin-inline: 1rem;
-}
-
-.black-kill {
-    box-shadow: -.5rem 0 .5rem .5rem black;
-}
-
-.white-kill {
-    box-shadow: .5rem 0 .5rem .5rem whitesmoke;
-}
-
-.eat {
-    display: block;
-    width: 4rem;
-    height: 4rem;
-    background-color: rgba(200, 200, 200, .6);
-}
-
 .board {
     display: grid;
     grid: 4rem 4rem 4rem 4rem 4rem 4rem 4rem 4rem / 32rem;
     width: 32rem;
     height: 32rem;
-    box-shadow: -.2rem -.2rem 1rem 1rem black, .2rem .2rem 1rem 1rem whitesmoke;
 }
 .line-odd, .line-even {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid: 4rem / 4rem 4rem 4rem 4rem 4rem 4rem 4rem 4rem;
     justify-content: center;
     align-items: center;
 }
@@ -84,12 +77,11 @@ html {
 
 .line-odd > .cell:nth-child(odd),
 .line-even > .cell:nth-child(even) {
-    background-color: whitesmoke;
+    background-color: wheat;
     color: black;
 }
 
 .cell {
-    display: block;
     width: 4rem;
     height: 4rem;
 }
@@ -107,10 +99,9 @@ html {
 .king-white,
 .king-black {
     display: block;
-    width: 4rem;
-    height: 4rem;
     background-repeat: no-repeat;
     background-position: center;
+    background-size: 80%;
 }
 
 .pawn-white:hover,
@@ -125,9 +116,8 @@ html {
 .queen-black:hover, 
 .king-white:hover,
 .king-black:hover {
-    transform: scale(1.2);
-    border: solid .2rem green;
-    box-shadow: 0 0 .2rem .2rem lightgreen;
+    outline: solid .2rem white;
+    z-index: 10;
 } 
 
 .pawn-white {
@@ -178,59 +168,59 @@ html {
     background-image: url("./assets/models/extends/lucas312/king1.png");
 }
 
-#cell-1::before,
-#cell-9::before,
-#cell-17::before,
-#cell-25::before,
-#cell-33::before,
-#cell-41::before,
-#cell-49::before,
-#cell-57::before {
+#a8::before,
+#a7::before,
+#a6::before,
+#a5::before,
+#a4::before,
+#a3::before,
+#a2::before,
+#a1::before {
     color: inherit;
     position: absolute;
     display: block;
 }
 
-#cell-1::before {
+#a1::before {
     content: "1";
 }
 
-#cell-9::before {
+#a2::before {
     content: "2";
 }
 
-#cell-17::before {
+#a3::before {
     content: "3";
 }
 
-#cell-25::before {
+#a4::before {
     content: "4";
 }
 
-#cell-33::before {
+#a5::before {
     content: "5";
 }
 
-#cell-41::before {
+#a6::before {
     content: "6";
 }
 
-#cell-49::before {
+#a7::before {
     content: "7";
 }
 
-#cell-57::before {
+#a8::before {
     content: "8";
 }
 
-#cell-57::after,
-#cell-58::after,
-#cell-59::after,
-#cell-60::after,
-#cell-61::after,
-#cell-62::after,
-#cell-63::after,
-#cell-64::after {
+#a1::after,
+#b1::after,
+#c1::after,
+#d1::after,
+#e1::after,
+#f1::after,
+#g1::after,
+#h1::after {
     color: inherit;
     display: block;
     position: absolute;
@@ -238,34 +228,34 @@ html {
     margin-top: 2.8rem;
 }
 
-#cell-57::after {
+#h1::after {
     content: "h";
 }
 
-#cell-58::after {
+#g1::after {
     content: "g";
 }
 
-#cell-59::after {
+#f1::after {
     content: "f";
 }
 
-#cell-60::after {
+#e1::after {
     content: "e";
 }
 
-#cell-61::after {
+#d1::after {
     content: "d";
 }
 
-#cell-62::after {
+#c1::after {
     content: "c";
 }
 
-#cell-63::after {
+#b1::after {
     content: "b";
 }
 
-#cell-64::after {
+#a1::after {
     content: "a";
 }
