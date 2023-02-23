@@ -37,7 +37,6 @@ class EventListener {
                         "." + this.classes.hold
                     );
                     this.game.moveFigure(
-                        figure,
                         figure.attributes.id.value,
                         item.attributes.id.value
                     );
@@ -48,7 +47,6 @@ class EventListener {
                         "." + this.classes.hold
                     );
                     this.game.moveFigure(
-                        figure,
                         figure.attributes.id.value,
                         item.attributes.id.value
                     );
@@ -208,12 +206,14 @@ class StartGame {
 
 class Chess {
     constructor() {
+        this.handler = new HandlerUtil()
+        this.colors = this.handler.parseColors();
+        this.classes = this.handler.classes;
         this.position = undefined;
         this.figure = undefined;
         this.queue = undefined;
         this.check = false;
         this.checkMate = false;
-        this.colors = new HandlerUtil().parseColors();
         this.lines = {
             1: ["a", "b", "c", "d", "e", "f", "g", "h"],
             2: ["a", "b", "c", "d", "e", "f", "g", "h"],
@@ -292,17 +292,16 @@ class Chess {
         };
         this.user = {
             name: "user",
-            color: localStorage.getItem("userColor"),
+            color: this.colors.user, 
             side: "bottom",
             kill: 0,
         };
         this.bot = {
             name: "bot",
-            color: localStorage.getItem("botColor"),
+            color: this.colors.bot,
             side: "top",
             kill: 0,
         };
-        this.classes = new HandlerUtil().classes;
         this.figures = {
             pawn: "pawn",
             rook: "rook",
@@ -313,39 +312,37 @@ class Chess {
         };
     }
 
-    moveFigure(figure, from, to) {
+    moveFigure(from, to) {
         this.queue = new HandlerUtil().whoQueue();
-        let cellTo = undefined;
-        let figureId = figure.attributes.id.value;
-        let figureClassName = this.positions[figureId];
-        let figureName = figureClassName.split("-")[0];
-        let figureColor = figureClassName.split("-")[1];
-        let cellFrom = document.getElementById(from);
+        let cellTo = undefined,
+            figureName = this.positions[from],
+            figureColor = this.positions[from].split("-")[1],
+            cellFrom = document.getElementById(from);
         if (this.queue.color === figureColor && this.checkMove(to)) {
             cellTo = document.getElementById(to);
-            cellFrom.classList.remove(figureClassName);
+            cellFrom.classList.remove(figureName);
             cellFrom.classList.remove(this.classes.hold);
             cellFrom.classList.add(this.classes.cell);
             if (this.positions[to] !== null) {
-                this.eatFigure(from, to);
-                cellTo.classList.remove(this.positions[toId]);
+                this.eatFigure(to);
+                cellTo.classList.remove(this.positions[to]);
             }
-            cellTo.classList.add(figureClassName);
+            cellTo.classList.add(this.positions[from]);
             this.positions[to] = this.positions[from];
             this.positions[from] = null;
             new HandlerUtil().toggleQueue();
-            new HandlerUtil().clearDecals();
+            this.handler.clearDecals();
         } else {
             this.setCellClass(to, this.classes.wrongMove);
-            new HandlerUtil().clearDecals();
+            this.handler.clearDecals();
         }
     }
 
     checkMove(pos) {
         let possibleCell = document
             .getElementById(pos)
-            .className.match(this.classes.possibleMove);
-        let killCell = document
+            .className.match(this.classes.possibleMove),
+            killCell = document
             .getElementById(pos)
             .className.match(this.classes.killMove);
         return possibleCell !== null || killCell != null;
@@ -534,20 +531,19 @@ class Chess {
         }
     }
 
-    eatFigure(murder, meal) {
-        let mealId = meal.split("-")[1];
+    eatFigure(meal) {
         let count = null;
-        if (this.queue === this.user.color) {
-            count = this.user.kill;
+        if (this.queue.color === this.user.color) {
             this.user.kill += 1;
+            count = this.user.kill;
         } else {
-            count = this.bot.kill;
             this.bot.kill += 1;
+            count = this.bot.kill;
         }
         let cell = document.getElementById(
-            this.queue + "-eat-" + (count + 1).toString()
+            this.queue.color + "-eat-" + (count).toString()
         );
-        cell.classList.add(this.position[mealId]);
+        cell.classList.add(this.positions[meal]);
     }
 
     analyzeMove(pos, movePos) {
@@ -587,7 +583,17 @@ class Chess {
 
     possibleChangeFigure() {}
 
-    isCheck() {}
+    isCheck(pos) {
+        let figure = this.positions[pos],
+            figureName = figure.split("-")[0],
+            figureColor = figure.split("-")[1];
+        if (figureName === this.figures.king && figureColor === this.queue.opposite) {
+            this.check = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     isCheckMate() {}
 
@@ -619,17 +625,22 @@ class Chess {
             return false;
         } else {
             color = cell.split("-")[1];
-            return color === this.queue.opposite;
+            if (this.isCheck(pos)) {
+                this.setCellClass(pos, this.classes.checkMove);
+                return true;
+            } else if (color === this.queue.opposite) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
     setCellToPossibleMove(pos) {
-        //document.getElementById(pos).classList.remove(this.classes.cell);
         document.getElementById(pos).classList.add(this.classes.possibleMove);
     }
 
     setCellToEat(pos) {
-        //document.getElementById(pos).classList.remove(this.classes.cell);
         document.getElementById(pos).classList.add(this.classes.killMove);
     }
 
@@ -650,7 +661,7 @@ class HandlerUtil {
             possibleMove: "possible-move",
             wrongMove: "wrong-move",
             killMove: "kill-move",
-            chekMove: "check-move",
+            checkMove: "check-move",
             checkMateMove: "checkmate-move",
         };
     }
@@ -709,5 +720,9 @@ class HandlerUtil {
                 item.classList.remove(this.classes.killMove);
                 item.classList.add(this.classes.cell);
             });
+        document.querySelectorAll("." + this.classes.checkMove).forEach((item) => {
+            item.classList.remove(this.classes.checkMove);
+            item.classList.add(this.classes.cell);
+        });
     }
 }
